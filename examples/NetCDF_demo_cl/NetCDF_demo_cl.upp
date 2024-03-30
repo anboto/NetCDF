@@ -1,0 +1,12 @@
+description "NetCDF library demo\377";
+
+uses
+	Core,
+	NetCDF;
+
+file
+	NetCDF_demo_cl.cpp;
+
+mainconfig
+	"" = "";
+

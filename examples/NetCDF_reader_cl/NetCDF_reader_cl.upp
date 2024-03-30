@@ -1,0 +1,12 @@
+description "NetCDF file reader\377";
+
+uses
+	Core,
+	NetCDF;
+
+file
+	NetCDF_reader_cl.cpp;
+
+mainconfig
+	"" = "";
+
