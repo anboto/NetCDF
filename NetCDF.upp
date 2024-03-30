@@ -1,0 +1,14 @@
+description "HDF5 Hierarchical Data Format (HDF) library wrapper\377B44,169,203";
+
+uses
+	Core,
+	plugin/Hdf5,
+	plugin/z,
+	Eigen,
+	plugin/NetCDF;
+
+file
+	NetCDF.cpp,
+	NetCDF.h,
+	Copying;
+
