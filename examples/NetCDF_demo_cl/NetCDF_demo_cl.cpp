@@ -466,39 +466,37 @@ CONSOLE_APP_MAIN
 	
 	try {
 		UppLog() << "\nNetCDF wrapper test\n";
-	/*	String file = "datalib.h5";
+		String file = "datalib.nc";
 		{
-			NetCDFFile hfile;
+			NetCDFFile cdf;
 			
-			if (!hfile.Create(file))
-				throw Exc("Problem creating file");
+			cdf.Create(file);
 			
-			hfile.CreateGroup("simulation_parameters", true);
-			hfile.Set("number_integer", 23).SetAttribute("description", "This is an integer");
-			hfile.Set("number_double", 24.5).SetAttribute("description", "This is a double");
-			hfile.Set("text", "hello").SetAttribute("description", "This is a string");
+			cdf.CreateGroup("simulation_parameters", true);
+			cdf.Set("number_integer", 23).SetAttribute("description", "This is an integer");
+			cdf.Set("number_double", 24.5).SetAttribute("description", "This is a double");
+			cdf.Set("text", "hello").SetAttribute("description", "This is a string");
 			Eigen::MatrixXd a(2, 3);
 			a << 1, 2, 3, 11, 22, 33;
-			hfile.Set("matrix_double", a).SetAttribute("description", "This is matrix of double");
+			cdf.Set("matrix_double", a).SetAttribute("description", "This is matrix of double");
 			Eigen::Tensor<double, 4> m(2, 3, 7, 1);
 			m(0, 2, 5, 0) = 123.45;
-			hfile.Set<4>("multi_matrix", m);
+			cdf.Set<4>("multi_matrix", m);
 		}
 		{
-			NetCDFFile hfile;
+			NetCDFFile cdf;
 			
-			if (!hfile.Open(file))
-				throw Exc("Problem opening file");
+			cdf.Open(file);
 			
-			hfile.ChangeGroup("simulation_parameters");
-			int in = hfile.GetInt("number_integer");
+			cdf.ChangeGroup("simulation_parameters");
+			int in = cdf.GetInt("number_integer");
 			VERIFY(in == 23);
-			double d = hfile.GetDouble("number_double");
+			double d = cdf.GetDouble("number_double");
 			VERIFY(d == 24.5);
-			String s = hfile.GetString("text");
+			String s = cdf.GetString("text");
 			VERIFY(s == "hello");
 			Eigen::MatrixXd m;
-			hfile.GetDouble("matrix_double", m);
+			cdf.GetDouble("matrix_double", m);
 			VERIFY(m(1, 1) == 22);
 			VERIFY(m(1, 2) == 33);
 			MultiDimMatrixIndex icol(2,3, 7, 1);
@@ -506,9 +504,9 @@ CONSOLE_APP_MAIN
 			MultiDimMatrixIndexRowMajor irow(2, 3, 7, 1);
 			int ir = irow(0, 2, 5, 0);
 			MultiDimMatrixRowMajor<double> b;
-			hfile.GetDouble("multi_matrix", b);
+			cdf.GetDouble("multi_matrix", b);
 			VERIFY(b(0, 2, 5, 0) == 123.45);
-		}*/
+		}
 	} catch (Exc err) {
 		UppLog() << "\n" << Format(t_("Problem found: %s"), err);
 		SetExitCode(-1);

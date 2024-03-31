@@ -89,9 +89,9 @@ public:
 	template <int Rank>
 	NetCDFFile &Set(const char *name, const Eigen::Tensor<double, Rank> &d);
 		
-	NetCDFFile &SetGlobalAttribute(const char *name, int d);
-	NetCDFFile &SetGlobalAttribute(const char *name, double d);
-	NetCDFFile &SetGlobalAttribute(const char *name, const char *d);
+	NetCDFFile &SetAttribute(const char *name, int d);
+	NetCDFFile &SetAttribute(const char *name, double d);
+	NetCDFFile &SetAttribute(const char *name, const char *d);
 	
 	void SetGlobalAttributes()	{lastvarid = NC_GLOBAL;}
 	nc_type GetAttributeType(const char *name);

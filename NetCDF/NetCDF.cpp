@@ -21,6 +21,13 @@ bool NetCDFFile::IsOpened() {
 	return ncid >= 0;
 }
 
+void NetCDFFile::Create(const char *file) {
+	Close();
+	
+    if ((retval = nc_create(file, NC_CLOBBER, &ncid)))
+       throw Exc(nc_strerror(retval)); 
+}
+    
 void NetCDFFile::Close() {
 	if (IsOpened() && (retval = nc_close(ncid)))
        throw Exc(nc_strerror(retval)); 
@@ -85,6 +92,24 @@ double NetCDFFile::GetAttributeDouble(const char *name) {
 	if ((retval = nc_get_att_double(ncid, lastvarid, name, &ret))) 
 		throw Exc(nc_strerror(retval)); 	
 	return ret;
+}
+
+NetCDFFile &NetCDFFile::SetAttribute(const char *name, int d) {
+	if ((retval = nc_put_att_int(ncid, lastvarid, name, NC_INT, 1, &d)))
+		throw Exc(nc_strerror(retval)); 
+	return *this;
+}
+
+NetCDFFile &NetCDFFile::SetAttribute(const char *name, double d) {
+	if ((retval = nc_put_att_double(ncid, lastvarid, name, NC_DOUBLE, 1, &d)))
+		throw Exc(nc_strerror(retval)); 
+	return *this;
+}
+
+NetCDFFile &NetCDFFile::SetAttribute(const char *name, const char *d) {
+    if ((retval = nc_put_att_text(ncid, lastvarid, name, strlen(d), d)))
+        throw Exc(nc_strerror(retval)); 
+	return *this;
 }
 							
 String NetCDFFile::TypeName(nc_type type) {
