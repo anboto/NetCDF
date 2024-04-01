@@ -439,7 +439,7 @@ with zip */
 /* #undef HDF5_SUPPORTS_PAR_FILTERS */
 
 /* if true, HDF5 is at least version 1.10.5 and supports UTF8 paths */
-/* #undef HDF5_UTF8_PATHS */
+#define HDF5_UTF8_PATHS
 
 /* if true, backtrace support will be used. */
 /* #undef HAVE_EXECINFO_H */
@@ -476,7 +476,7 @@ with zip */
 /* #undef ENABLE_INTERNAL_DOCS */
 /* #undef VALGRIND_TESTS */
 /* #undef ENABLE_CDMREMOTE */
-/* #undef USE_HDF5 */
+#define USE_HDF5
 /* #undef ENABLE_FILEINFO */
 /* #undef TEST_PARALLEL */
 /* #undef BUILD_RPC */
@@ -595,7 +595,7 @@ with zip */
 /* #undef USE_FSYNC */
 
 /* if true, use HDF4 too */
-/* #undef USE_HDF4 */
+//#define USE_HDF4
 
 /* If true, use use wget to fetch some sample HDF4 data, and then test against
    it. */

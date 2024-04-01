@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2021 - 2023, the Anboto author and contributors
+// Copyright 2021 - 2024, the Anboto author and contributors
 #ifndef _hdf5_h_
 #define _hdf5_h_
 
@@ -18,20 +18,22 @@ public:
 	NetCDFFile(const char *file){Open(file);}
 	~NetCDFFile()				{Close();}	
 	
-	void Create(const char *file);		
+	void Create(const char *file, int format = 0);		
 	void Open(const char *file);
 	bool IsOpened();
 	void Close();
 
 	String GetFileFormat();
 
-	Vector<String> ListGroup();
+	const Vector<String> &ListGroups() const;
 	Vector<String> ListGlobalAttributes();
 	Vector<String> ListVariables();
 	Vector<String> ListAttributes(const char *name);
 	
-	bool ChangeGroup(const char *group);
-	bool CreateGroup(const char *group, bool change = false);
+	void ChangeGroup(const char *group);
+	void ChangeGroupRoot();
+	void ChangeGroupUp();
+	void CreateGroup(const char *group, bool change = false);
 	
 	int GetId(const char *name);
 	
@@ -87,7 +89,40 @@ public:
 	NetCDFFile &Set(const char *name, const Eigen::MatrixXd &d);
 	NetCDFFile &Set(const char *name, const MultiDimMatrixRowMajor<double> &d);
 	template <int Rank>
-	NetCDFFile &Set(const char *name, const Eigen::Tensor<double, Rank> &d);
+	NetCDFFile &Set(const char *name, const Eigen::Tensor<double, Rank> &d) {
+		if ((retval = nc_redef(ncid)))
+    		throw Exc(nc_strerror(retval));	
+			
+		String namedim;
+		Buffer<int> dimids(Rank);
+		for (int i = 0; i < Rank; ++i) {
+			namedim = Format("%s_%d", name, i);
+			if ((retval = nc_def_dim(ncid, ~namedim, d.dimension(i), &dimids[i])))
+		       	throw Exc(nc_strerror(retval));	
+		}
+		int varid;
+		if ((retval = nc_def_var(ncid, name, NC_DOUBLE, Rank, dimids, &varid)))
+	    	throw Exc(nc_strerror(retval));	
+	    	 
+	    if ((retval = nc_enddef(ncid)))
+	    	throw Exc(nc_strerror(retval));	
+	
+		int sz = 1;
+		Vector<int> dimensions(Rank);
+		for (int i = 0; i < Rank; ++i) { 
+			sz *=  d.dimension(i);
+			dimensions[i] = int(d.dimension(i));
+		}
+		Buffer<double> d_row(sz);
+		ColMajorToRowMajor(d.data(), ~d_row, dimensions);
+		  
+	    if ((retval = nc_put_var_double(ncid, varid, ~d_row)))
+	    	throw Exc(nc_strerror(retval));	
+		
+		lastvarid = varid;
+		
+		return *this;
+	}
 		
 	NetCDFFile &SetAttribute(const char *name, int d);
 	NetCDFFile &SetAttribute(const char *name, double d);
@@ -108,13 +143,20 @@ public:
 
 private:
 	int ncid = -1;
+	int fileid = -1;
 	int lastvarid = -1;
 	int retval;
+	Vector<int> groupIds;
+	Vector<String> groupNames;
+	Vector<int> groupPathIds;
+	bool allowGroups = false;
 	
 	String GetAttributeString0(const char *name, int len);
 	void GetVariableData(int id, nc_type &type, Vector<int> &dims);
 	void GetVariableData0(int id, nc_type &type, Vector<int> &dims);
 	String GetName(int id);
+	void ChangeGroup(int group_id);
+	String ToString0();
 };
 
 }

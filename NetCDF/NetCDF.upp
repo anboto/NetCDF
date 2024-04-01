@@ -5,7 +5,8 @@ uses
 	plugin/Hdf5,
 	plugin/z,
 	Eigen,
-	plugin/NetCDF;
+	plugin/NetCDF,
+	Functions4U;
 
 file
 	NetCDF.cpp,

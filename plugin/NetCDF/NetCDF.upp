@@ -8,11 +8,31 @@ uses
 	Core;
 
 include
-	./include;
+	./include,
+	../../../Hdf5\plugin\Hdf5\src;
 
 file
 	libdispatch\datt.c,
 	libdispatch\dattget.c,
+	libhdf5\hdf5attr.c,
+	libhdf5\hdf5create.c,
+	libhdf5\hdf5debug.c,
+	libhdf5\hdf5debug.h,
+	libhdf5\hdf5dim.c,
+	libhdf5\hdf5dispatch.c,
+	libhdf5\hdf5err.h,
+	libhdf5\hdf5file.c,
+	libhdf5\hdf5filter.c,
+	libhdf5\hdf5grp.c,
+	libhdf5\hdf5internal.c,
+	libhdf5\hdf5open.c,
+	libhdf5\hdf5set_format_compatibility.c,
+	libhdf5\hdf5type.c,
+	libhdf5\hdf5var.c,
+	libhdf5\nc4hdf.c,
+	libhdf5\nc4info.c,
+	libhdf5\nc4mem.c,
+	libhdf5\nc4memcb.c,
 	libdispatch\dattinq.c,
 	libdispatch\dattput.c,
 	libdispatch\dauth.c,
