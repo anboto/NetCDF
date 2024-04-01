@@ -11,5 +11,6 @@ uses
 file
 	NetCDF.cpp,
 	NetCDF.h,
-	Copying;
+	Copying,
+	srcdoc.tpp;
 
