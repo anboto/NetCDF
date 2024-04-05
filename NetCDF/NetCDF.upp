@@ -1,4 +1,4 @@
-description "HDF5 Hierarchical Data Format (HDF) library wrapper\377B44,169,203";
+description "Network Common Data Form (NetCDF) library wrapper\377B44,169,203";
 
 uses
 	Core,

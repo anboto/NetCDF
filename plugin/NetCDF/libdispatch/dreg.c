@@ -2,6 +2,7 @@
  * Copyright 2018, University Corporation for Atmospheric Research
  * See netcdf/COPYRIGHT file for copying and redistribution conditions.
  */
+#ifdef REGEDIT
 
 #include "config.h"
 #include <stdlib.h>
@@ -46,3 +47,5 @@ getmountpoint(char* keyvalue, size_t size)
 done:
     return (stat == ERROR_SUCCESS ? 0 : -1);
 }
+
+#endif

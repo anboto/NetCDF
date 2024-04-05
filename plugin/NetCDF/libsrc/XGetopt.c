@@ -28,6 +28,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef __linux__
 
 #ifndef DLL_EXPORT
 #define DLL_EXPORT
@@ -282,3 +283,5 @@ XCommandLineToArgvA(int* argcp, char*** argvp)
     nclistfree(argv);
     ncbytesfree(word);
 }
+
+#endif

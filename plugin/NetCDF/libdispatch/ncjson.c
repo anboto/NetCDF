@@ -1073,6 +1073,10 @@ NCJdump(const NCjson* json, unsigned flags, FILE* out)
     nullfree(text);
 }
 
+#ifndef strlcat
+size_t strlcat(char *dst, const char *src, size_t dstsize);
+#endif
+
 OPTSTATIC const char*
 NCJtotext(const NCjson* json)
 {

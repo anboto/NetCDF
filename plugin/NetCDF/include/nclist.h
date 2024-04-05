@@ -4,6 +4,7 @@
 #define NCLIST_H 1
 
 #include "ncexternl.h"
+#include <stdlib.h>
 
 /* Define the type of the elements in the list*/
 

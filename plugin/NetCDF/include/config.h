@@ -233,7 +233,9 @@ are set when opening a binary file on Windows. */
 #define HAVE_BASETSD_H 1
 
 /* Define if we have filelengthi64. */
+#ifdef _WIN32
 #define HAVE_FILE_LENGTH_I64 1
+#endif
 
 /* Define to 1 if you have the `fileno' function. */
 #define HAVE_FILENO 1
@@ -311,7 +313,9 @@ are set when opening a binary file on Windows. */
 #define HAVE_MEMMOVE 1
 
 /* Define to 1 if you have the `mkstemp' function. */
-/* #undef HAVE_MKSTEMP */
+#ifdef __linux__
+#define HAVE_MKSTEMP
+#endif
 
 /* Define to 1 if you have the `mktemp' function. */
 #define HAVE_MKTEMP 1
@@ -332,7 +336,9 @@ are set when opening a binary file on Windows. */
 #define HAVE_SNPRINTF 1
 
 /* Define to 1 if the system has the type `ssize_t'. */
-/* #undef HAVE_SSIZE_T */
+#ifdef __linux__
+#define HAVE_SSIZE_T
+#endif
 
 /* Define to 1 if the system has the type `ptrdiff_t'. */
 #define HAVE_PTRDIFF_T 1
@@ -421,11 +427,15 @@ are set when opening a binary file on Windows. */
 /* Define to 1 if the system has the type `uint64'. */
 /* #undef HAVE_UINT64 */
 
+#ifdef __linux__
+#define TCHAR char
+#endif
+
 /* Define to 1 if the system has the type `uint64_t'. */
 #define HAVE_UINT64_T 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
-/* #undef HAVE_UNISTD_H */
+#define HAVE_UNISTD_H 1
 #define YY_NO_UNISTD_H 1
 
 /* Define to 1 if the system has the type `ushort'. */
@@ -508,7 +518,7 @@ with zip */
 #define PACKAGE_VERSION "4.9.2"
 
 /* Do we have access to the Windows Registry */
-#define REGEDIT 1
+//#define REGEDIT 1
 
 /* define the possible sources for remote test servers */
 #define REMOTETESTSERVERS	"remotetest.unidata.ucar.edu"

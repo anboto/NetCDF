@@ -8,7 +8,8 @@ Common Data Form (NetCDF)][%%*A2  ][*A2 is a set of software libraries
 and machine`-independent data formats that support the creation, 
 access, and sharing of array`-oriented scientific data]&]
 [s0; [2 NetCDF U`+`+ wrapper is a basic C`+`+ wrapper for NetCDF .nc 
-files]&]
+files, at ][^https`:`/`/www`.unidata`.ucar`.edu`/blogs`/news`/entry`/netcdf`-4`-9`-2^2 v
+ersion 4.9.2][2 .]&]
 [s0;2 &]
 [s0; [2 Two simple sample packages are included:]&]
 [s0;i150;O0; [2 examples/Hdf5`_demo`_cl.-|A basic demo and unitest.]&]

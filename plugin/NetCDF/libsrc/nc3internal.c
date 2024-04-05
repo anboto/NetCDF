@@ -1642,6 +1642,11 @@ NC3_inq_type(int ncid, nc_type typeid, char *name, size_t *size)
    return NC_NOERR;
 }
 
+
+#ifndef unlink
+int unlink(const char *pathname);
+#endif
+
 /**
  * This is an obsolete form of nc_delete(), supported for backwards
  * compatibility.
