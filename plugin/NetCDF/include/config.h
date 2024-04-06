@@ -435,7 +435,9 @@ are set when opening a binary file on Windows. */
 #define HAVE_UINT64_T 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
+#ifndef _MSC_VER
 #define HAVE_UNISTD_H 1
+#endif
 #define YY_NO_UNISTD_H 1
 
 /* Define to 1 if the system has the type `ushort'. */

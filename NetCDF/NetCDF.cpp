@@ -74,7 +74,7 @@ String NetCDFFile::GetAttributeString(const char *name) {
     	throw Exc(nc_strerror(retval)); 
 
 	switch(type) {
-	case NC_CHAR:	return GetAttributeString0(name, att_len);
+	case NC_CHAR:	return GetAttributeString0(name, int(att_len));
 	case NC_BYTE:
 	case NC_SHORT:
 	case NC_INT:	return FormatInt(GetAttributeInt(name));
@@ -88,7 +88,7 @@ String NetCDFFile::GetAttributeString0(const char *name, int len) {
 	StringBuffer bstr((int)len);
 	if ((retval = nc_get_att_text(ncid, lastvarid, name, ~bstr)))
 		throw Exc(nc_strerror(retval)); 	 
-	return bstr;
+	return String(bstr);
 }
 
 int NetCDFFile::GetAttributeInt(const char *name) {
@@ -271,7 +271,7 @@ String NetCDFFile::GetString(const char *name) {
 	StringBuffer data(dims[0]);
 	if ((retval = nc_get_var_text(ncid, lastvarid, ~data)))
     	throw Exc(nc_strerror(retval));	
-	return data;
+	return String(data);
 }
 
 void NetCDFFile::GetVariableData(const char *name, nc_type &type, Vector<int> &dims) {
