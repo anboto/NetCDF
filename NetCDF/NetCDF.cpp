@@ -225,6 +225,11 @@ String NetCDFFile::GetName(int id) {
     return String(var_name);
 }
 
+bool NetCDFFile::ExistVar(const char *name) {
+	int ret;
+    return NC_NOERR == nc_inq_varid(ncid, name, &ret);
+}
+	
 int NetCDFFile::GetId(const char *name) {
 	int ret;
     if ((retval = nc_inq_varid(ncid, name, &ret)))
@@ -334,12 +339,15 @@ void NetCDFFile::GetDouble(const char *name, Vector<double> &data) {
 	if (type != NC_DOUBLE)
 		throw Exc(Format("Data is not double. Found %s", TypeName(type)));
 	
-	if (dims.size() != 1)
+	if (dims.size() == 0) 
+		data.SetCount(1);
+	else if (dims.size() == 1)
+		data.SetCount(dims[0]);
+	else
 		throw Exc(Format("Wrong number of dimensions in GetDouble(). Found %d", dims.size()));
 	
-	data.SetCount(dims[0]);
 	if ((retval = nc_get_var_double(ncid, lastvarid, data.begin())))
-    	throw Exc(nc_strerror(retval));	
+	    throw Exc(nc_strerror(retval));		
 }
 	
 void NetCDFFile::GetDouble(const char *name, Eigen::MatrixXd &data) {
@@ -702,7 +710,7 @@ String NetCDFFile::ToString0() {
 					sdims << ",";
 				sdims << dims[i];
 			}
-			ret << indent << Format("(%s)", sdims);
+			ret << Format("(%s)", sdims);
 		}
 		ret << Format(": %s", GetVariableString(name));
 		Vector<String> attributes = ListAttributes(name);
@@ -722,7 +730,7 @@ String NetCDFFile::ToString0() {
 }
    
 String NetCDFFile::ToString() {
-	String ret = Format("Format: %s", GetFileFormat());
+	String ret = Format("\nFormat: %s", GetFileFormat());
 	
 	ChangeGroupRoot();
 	

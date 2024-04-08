@@ -35,6 +35,7 @@ public:
 	void ChangeGroupUp();
 	void CreateGroup(const char *group, bool change = false);
 	
+	bool ExistVar(const char *name);
 	int GetId(const char *name);
 	
 	void GetVariableData(const char *name, nc_type &type, Vector<int> &dims);
