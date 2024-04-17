@@ -105,7 +105,7 @@ public:
 		if ((retval = nc_def_var(ncid, name, NC_DOUBLE, Rank, dimids, &varid)))
 	    	throw Exc(nc_strerror(retval));	
 	    	 
-	    if ((retval = nc_enddef(ncid)))
+		if ((retval = nc_enddef(ncid)))
 	    	throw Exc(nc_strerror(retval));	
 	
 		int sz = 1;
@@ -117,7 +117,7 @@ public:
 		Buffer<double> d_row(sz);
 		ColMajorToRowMajor(d.data(), ~d_row, dimensions);
 		  
-	    if ((retval = nc_put_var_double(ncid, varid, ~d_row)))
+		if ((retval = nc_put_var_double(ncid, varid, ~d_row)))
 	    	throw Exc(nc_strerror(retval));	
 		
 		lastvarid = varid;

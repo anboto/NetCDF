@@ -14,12 +14,12 @@ void NetCDFFile::Open(const char *file) {
 	if (!FileExists(file))
 		throw Exc(Format("File '%s' does not exist", file));
 
-    if ((retval = nc_open(file, NC_NOWRITE, &ncid)))
+	if ((retval = nc_open(file, NC_NOWRITE, &ncid)))
        throw Exc(nc_strerror(retval)); 
     fileid = ncid;
  
   	int format;
-    if ((retval = nc_inq_format(ncid, &format)))
+	if ((retval = nc_inq_format(ncid, &format)))
     	throw Exc(nc_strerror(retval));
     
     allowGroups = format == NC_FORMAT_NETCDF4 || format == NC_FORMAT_NETCDF4_CLASSIC;
@@ -34,7 +34,7 @@ bool NetCDFFile::IsOpened() {
 void NetCDFFile::Create(const char *file, int format) {
 	Close();
 	
-    if ((retval = nc_create(file, NC_CLOBBER | format, &ncid)))
+	if ((retval = nc_create(file, NC_CLOBBER | format, &ncid)))
        throw Exc(nc_strerror(retval)); 
     fileid = ncid;
     
@@ -42,7 +42,7 @@ void NetCDFFile::Create(const char *file, int format) {
  
     ChangeGroupRoot();
     
-    if ((retval = nc_enddef(ncid)))
+	if ((retval = nc_enddef(ncid)))
     	throw Exc(nc_strerror(retval));	
 }
     
@@ -54,7 +54,7 @@ void NetCDFFile::Close() {
 
 String NetCDFFile::GetFileFormat() {
   	int format;
-    if ((retval = nc_inq_format(ncid, &format)))
+	if ((retval = nc_inq_format(ncid, &format)))
     	throw Exc(nc_strerror(retval)); 
 
     switch (format) {
@@ -116,7 +116,7 @@ NetCDFFile &NetCDFFile::SetAttribute(const char *name, int d) {
 	if ((retval = nc_redef(ncid)))
     	throw Exc(nc_strerror(retval));	
     
-    if ((retval = nc_put_att_int(ncid, lastvarid, name, NC_INT, 1, &d)))
+	if ((retval = nc_put_att_int(ncid, lastvarid, name, NC_INT, 1, &d)))
 		throw Exc(nc_strerror(retval)); 
    
    	if ((retval = nc_enddef(ncid)))
@@ -129,10 +129,10 @@ NetCDFFile &NetCDFFile::SetAttribute(const char *name, double d) {
 	if ((retval = nc_redef(ncid)))
     	throw Exc(nc_strerror(retval));	
     
-    if ((retval = nc_put_att_double(ncid, lastvarid, name, NC_DOUBLE, 1, &d)))
+	if ((retval = nc_put_att_double(ncid, lastvarid, name, NC_DOUBLE, 1, &d)))
 		throw Exc(nc_strerror(retval)); 
     
-    if ((retval = nc_enddef(ncid)))
+	if ((retval = nc_enddef(ncid)))
     	throw Exc(nc_strerror(retval));	
     
 	return *this;
@@ -142,10 +142,10 @@ NetCDFFile &NetCDFFile::SetAttribute(const char *name, const char *d) {
 	if ((retval = nc_redef(ncid)))
     	throw Exc(nc_strerror(retval));	
 	    
-    if ((retval = nc_put_att_text(ncid, lastvarid, name, strlen(d), d)))
+	if ((retval = nc_put_att_text(ncid, lastvarid, name, strlen(d), d)))
         throw Exc(nc_strerror(retval)); 
     
-    if ((retval = nc_enddef(ncid)))
+	if ((retval = nc_enddef(ncid)))
     	throw Exc(nc_strerror(retval));	
         
 	return *this;
@@ -177,7 +177,7 @@ String NetCDFFile::TypeName(nc_type type) {
 Vector<String> NetCDFFile::ListGlobalAttributes() {
 	int ngatts_in;
    
-    if ((retval = nc_inq(ncid, NULL, NULL, &ngatts_in, NULL)))
+	if ((retval = nc_inq(ncid, NULL, NULL, &ngatts_in, NULL)))
  		throw Exc(nc_strerror(retval)); 
     
     Vector<String> ret(ngatts_in);	
@@ -185,7 +185,7 @@ Vector<String> NetCDFFile::ListGlobalAttributes() {
     char att_name[256];
     
     for (int i = 0; i < ngatts_in; i++) {
-        if ((retval = nc_inq_attname(ncid, NC_GLOBAL, i, att_name))) 
+    	if ((retval = nc_inq_attname(ncid, NC_GLOBAL, i, att_name))) 
             throw Exc(nc_strerror(retval)); 
         ret[i] = att_name;
     }
@@ -209,7 +209,7 @@ Vector<String> NetCDFFile::ListVariables() {
  		throw Exc(nc_strerror(retval)); 
  			
     Vector<int> ids(nvars);
-    if ((retval = nc_inq_varids(ncid, &nvars, ids.begin()))) 
+	if ((retval = nc_inq_varids(ncid, &nvars, ids.begin()))) 
         throw Exc(nc_strerror(retval)); 
     
     Vector<String> ret(nvars);
@@ -220,7 +220,7 @@ Vector<String> NetCDFFile::ListVariables() {
 
 String NetCDFFile::GetName(int id) {
     char var_name[NC_MAX_NAME];
-    if ((retval = nc_inq_varname(ncid, id, var_name))) 
+	if ((retval = nc_inq_varname(ncid, id, var_name))) 
 		throw Exc(nc_strerror(retval)); 
     return String(var_name);
 }
@@ -232,7 +232,7 @@ bool NetCDFFile::ExistVar(const char *name) {
 	
 int NetCDFFile::GetId(const char *name) {
 	int ret;
-    if ((retval = nc_inq_varid(ncid, name, &ret)))
+	if ((retval = nc_inq_varid(ncid, name, &ret)))
     	throw Exc(nc_strerror(retval)); 
     return ret;
 }
@@ -286,7 +286,7 @@ void NetCDFFile::GetVariableData(const char *name, nc_type &type, Vector<int> &d
 void NetCDFFile::GetVariableData(int id, nc_type &type, Vector<int> &dims) {
 	GetVariableData0(id, type, dims);
 	if (type == NC_CHAR) {	// The strings are set as vector of chars
-        if (dims.size() == 1)
+    	if (dims.size() == 1)
             dims.Clear();
         else if (dims.size() == 2) 
             dims.SetCount(1);
@@ -297,17 +297,17 @@ void NetCDFFile::GetVariableData0(int id, nc_type &type, Vector<int> &dims) {
 	lastvarid = id;
 	int ndim, natts;
 
-    if ((retval = nc_inq_var(ncid, id, NULL, &type, &ndim, NULL, &natts)))
+	if ((retval = nc_inq_var(ncid, id, NULL, &type, &ndim, NULL, &natts)))
       	throw Exc(nc_strerror(retval));
 
 	Vector<int> dimids(ndim);    
-    if ((retval = nc_inq_var(ncid, id, NULL, NULL, NULL, dimids.begin(), NULL)))
+	if ((retval = nc_inq_var(ncid, id, NULL, NULL, NULL, dimids.begin(), NULL)))
       	throw Exc(nc_strerror(retval));
     
     dims.SetCount(ndim);
     for (int i = 0; i < ndim; ++i) {
         size_t dim_size;
-	    if ((retval = nc_inq_dimlen(ncid, dimids[i], &dim_size)))
+		if ((retval = nc_inq_dimlen(ncid, dimids[i], &dim_size)))
 	  		throw Exc(nc_strerror(retval));
 	    dims[i] = int(dim_size);
     }
@@ -510,10 +510,10 @@ NetCDFFile &NetCDFFile::Set(const char *name, int d) {
 	if ((retval = nc_def_var(ncid, name, NC_INT, 0, NULL, &varid)))
     	throw Exc(nc_strerror(retval));	
  
-    if ((retval = nc_enddef(ncid)))
+	if ((retval = nc_enddef(ncid)))
     	throw Exc(nc_strerror(retval));	
   
-    if ((retval = nc_put_var_int(ncid, varid, &d)))
+	if ((retval = nc_put_var_int(ncid, varid, &d)))
     	throw Exc(nc_strerror(retval));	
     
     lastvarid = varid;
@@ -530,10 +530,10 @@ NetCDFFile &NetCDFFile::Set(const char *name, double d) {
 	if ((retval = nc_def_var(ncid, name, NC_DOUBLE, 0, NULL, &varid)))
     	throw Exc(nc_strerror(retval));	
  
-    if ((retval = nc_enddef(ncid)))
+	if ((retval = nc_enddef(ncid)))
     	throw Exc(nc_strerror(retval));	
   
-    if ((retval = nc_put_var_double(ncid, varid, &d)))
+	if ((retval = nc_put_var_double(ncid, varid, &d)))
     	throw Exc(nc_strerror(retval));	
     
     lastvarid = varid;
@@ -553,10 +553,10 @@ NetCDFFile &NetCDFFile::Set(const char *name, const char *d) {
 	if ((retval = nc_def_var(ncid, name, NC_CHAR, 1, &dimid, &varid)))
     	throw Exc(nc_strerror(retval));	
     	 
-    if ((retval = nc_enddef(ncid)))
+	if ((retval = nc_enddef(ncid)))
     	throw Exc(nc_strerror(retval));	
   
-    if ((retval = nc_put_var_text(ncid, varid, d)))
+	if ((retval = nc_put_var_text(ncid, varid, d)))
     	throw Exc(nc_strerror(retval));	
 	
 	lastvarid = varid;
@@ -576,10 +576,10 @@ NetCDFFile &NetCDFFile::Set(const char *name, const Eigen::VectorXd &d) {
 	if ((retval = nc_def_var(ncid, name, NC_DOUBLE, 1, &dimid, &varid)))
     	throw Exc(nc_strerror(retval));	
     	 
-    if ((retval = nc_enddef(ncid)))
+	if ((retval = nc_enddef(ncid)))
     	throw Exc(nc_strerror(retval));	
   
-    if ((retval = nc_put_var_double(ncid, varid, d.data())))
+	if ((retval = nc_put_var_double(ncid, varid, d.data())))
     	throw Exc(nc_strerror(retval));	
 	
 	lastvarid = varid;
@@ -599,10 +599,10 @@ NetCDFFile &NetCDFFile::Set(const char *name, const Vector<double> &d) {
 	if ((retval = nc_def_var(ncid, name, NC_DOUBLE, 1, &dimid, &varid)))
     	throw Exc(nc_strerror(retval));	
     	 
-    if ((retval = nc_enddef(ncid)))
+	if ((retval = nc_enddef(ncid)))
     	throw Exc(nc_strerror(retval));	
   
-    if ((retval = nc_put_var_double(ncid, varid, d.begin())))
+	if ((retval = nc_put_var_double(ncid, varid, d.begin())))
     	throw Exc(nc_strerror(retval));	
 	
 	lastvarid = varid;
@@ -620,20 +620,20 @@ NetCDFFile &NetCDFFile::Set(const char *name, const Eigen::MatrixXd &d) {
 	if ((retval = nc_def_dim(ncid, ~namedim, d.rows(), &dimids[0])))
        	throw Exc(nc_strerror(retval));	
     namedim = Format("%s_1", name);
-    if ((retval = nc_def_dim(ncid, ~namedim, d.cols(), &dimids[1])))
+	if ((retval = nc_def_dim(ncid, ~namedim, d.cols(), &dimids[1])))
        	throw Exc(nc_strerror(retval));	
     
 	int varid;
 	if ((retval = nc_def_var(ncid, name, NC_DOUBLE, 2, dimids, &varid)))
     	throw Exc(nc_strerror(retval));	
     	 
-    if ((retval = nc_enddef(ncid)))
+	if ((retval = nc_enddef(ncid)))
     	throw Exc(nc_strerror(retval));	
   
   	Vector<double> data;
 	CopyRowMajor(d, data);
 	
-    if ((retval = nc_put_var_double(ncid, varid, data.begin())))
+	if ((retval = nc_put_var_double(ncid, varid, data.begin())))
     	throw Exc(nc_strerror(retval));	
 	
 	lastvarid = varid;
@@ -656,10 +656,10 @@ NetCDFFile &NetCDFFile::Set(const char *name, const MultiDimMatrixRowMajor<doubl
 	if ((retval = nc_def_var(ncid, name, NC_DOUBLE, d.GetNumAxis(), dimids, &varid)))
     	throw Exc(nc_strerror(retval));	
     	 
-    if ((retval = nc_enddef(ncid)))
+	if ((retval = nc_enddef(ncid)))
     	throw Exc(nc_strerror(retval));	
   
-    if ((retval = nc_put_var_double(ncid, varid, d.begin())))
+	if ((retval = nc_put_var_double(ncid, varid, d.begin())))
     	throw Exc(nc_strerror(retval));	
 	
 	lastvarid = varid;
@@ -671,13 +671,13 @@ Vector<String> NetCDFFile::ListAttributes(const char *name) {
 	if (!name) 
 		lastvarid = GetId(name);
 	int num;
-    if ((retval = nc_inq_varnatts(ncid, lastvarid, &num))) 
+	if ((retval = nc_inq_varnatts(ncid, lastvarid, &num))) 
         throw Exc(nc_strerror(retval));	
 
 	Vector<String> ret;
 	char att_name[NC_MAX_NAME + 1];
 	for (int i = 0; i < num; ++i) {
-	    if ((retval = nc_inq_attname(ncid, lastvarid, i, att_name)))
+		if ((retval = nc_inq_attname(ncid, lastvarid, i, att_name)))
 			throw Exc(nc_strerror(retval));	
 		ret << att_name;
 	}
@@ -748,17 +748,17 @@ void NetCDFFile::ChangeGroup(int group_id) {
 		return;
 	ncid = group_id;
 	int numgrps;
-    if ((retval = nc_inq_grps(ncid, &numgrps, NULL)))
+	if ((retval = nc_inq_grps(ncid, &numgrps, NULL)))
         throw Exc(nc_strerror(retval));	
 
 	groupIds.SetCount(numgrps);
-    if ((retval = nc_inq_grps(ncid, NULL, groupIds.begin())))
+	if ((retval = nc_inq_grps(ncid, NULL, groupIds.begin())))
     	throw Exc(nc_strerror(retval));	
 
 	char grp_name[256];
 	groupNames.SetCount(numgrps);
     for (int i = 0; i < numgrps; i++) {
-        if ((retval = nc_inq_grpname(groupIds[i], grp_name)))
+    	if ((retval = nc_inq_grpname(groupIds[i], grp_name)))
             throw Exc(nc_strerror(retval));	
         
         groupNames[i] = grp_name;
@@ -793,9 +793,9 @@ void NetCDFFile::CreateGroup(const char *group, bool change) {
 	if (!allowGroups)
 		return;
 	int group_id;
-    if ((retval = nc_def_grp(ncid, group, &group_id))) 
+	if ((retval = nc_def_grp(ncid, group, &group_id))) 
         throw Exc(nc_strerror(retval));	
-    if (change) 
+	if (change) 
         ChangeGroup(group_id);
 }
 
