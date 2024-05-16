@@ -258,7 +258,7 @@ XCommandLineToArgvA(int* argcp, char*** argvp)
     word = ncbytesnew();
     whitespace = 1; /* start in whitespace mode */
     for(p=line;*p;p++) {
-	int c = *p;
+	int c = *p[0];
         if(whitespace && c <= ' ' || c == 127) continue; /* more whitespace */
         if(!whitespace && c <= ' ' || c == 127) {
 	    whitespace = 1; /* end of word */
@@ -268,7 +268,7 @@ XCommandLineToArgvA(int* argcp, char*** argvp)
 	}
 	whitespace = 0; /* end whitespace */
 	if(c == ESCAPE) {
-	    c = *(++p); /* move to next char */
+	    c = *(++p)[0]; /* move to next char */
 	} else if(c == SQUOTE || c == DQUOTE) {
 	    if(!quote) {quote = c; continue;} /* Start quoted text */
 	    if(quote == c) {quote = 0; continue;} /* end quoted text */

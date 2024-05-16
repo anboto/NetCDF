@@ -715,8 +715,8 @@ String NetCDFFile::ToString0() {
 		ret << Format(": %s", GetVariableString(name));
 		Vector<String> attributes = ListAttributes(name);
 		for (const String &attr : attributes) {
-			nc_type type = GetAttributeType(attr);
-			ret << indent << Format("\tattrib>%s (%s): %s", attr, NetCDFFile::TypeName(type), GetAttributeString(attr));
+			nc_type tp = GetAttributeType(attr);
+			ret << indent << Format("\tattrib>%s (%s): %s", attr, NetCDFFile::TypeName(tp), GetAttributeString(attr));
 		}
 	}
 	ret << indent << Format("SubGroups (%d):", ListGroups().size());
