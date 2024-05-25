@@ -5,7 +5,7 @@
 
 #include <plugin/Hdf5/src/hdf5.h>
 #include <Eigen/Eigen.h>
-#include <Eigen/MultiDimMatrixIndex.h>
+#include <Eigen/MultiDimMatrix.h>
 
 #include <plugin/NetCDF/include/config.h>
 #include <plugin/NetCDF/include/netcdf.h>
