@@ -55,9 +55,9 @@ CONSOLE_APP_MAIN
 				VERIFY(m(1, 1) == 22);
 				VERIFY(m(1, 2) == 33);
 				MultiDimMatrixIndex icol(2,3, 7, 1);
-				int ic = icol(0, 2, 5, 0);
+				//int ic = icol(0, 2, 5, 0);
 				MultiDimMatrixIndexRowMajor irow(2, 3, 7, 1);
-				int ir = irow(0, 2, 5, 0);
+				//int ir = irow(0, 2, 5, 0);
 				MultiDimMatrixRowMajor<double> b;
 				cdf.GetDouble("multi_matrix", b);
 				VERIFY(b(0, 2, 5, 0) == 123.45);

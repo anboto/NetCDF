@@ -176,7 +176,7 @@ are set when opening a binary file on Windows. */
 #define HAVE_BZ2 1
 
 /* Define to 1 if zstd library available. */
-/* #undef HAVE_ZSTD */
+#define HAVE_ZSTD 1
 
 /* Define to 1 if blosc library available. */
 /* #undef HAVE_BLOSC */
@@ -268,13 +268,13 @@ are set when opening a binary file on Windows. */
 /* #undef HAVE_SZ */
 
 /* Define to 1 if you have the <hdf5.h> header file. */
-/* #undef HAVE_HDF5_H */
+#define HAVE_HDF5_H 1
 
 /* Define to 1 if you have the <hdf5.h> header file. */
-/* #undef HAVE_HDF5_HL_H */
+#define HAVE_HDF5_HL_H 1
 
 /* Define to 1 if the system has the type `int64'. */
-/* #undef HAVE_INT64 */
+#define HAVE_INT64 1
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
@@ -301,7 +301,7 @@ are set when opening a binary file on Windows. */
 #define HAVE_LOCALE_H 1
 
 /* Define to 1 if the system has the type `longlong'. */
-/* #undef HAVE_LONGLONG */
+//#define HAVE_LONGLONG 1
 
 /* Define to 1 if the system has the type 'long long int'. */
 #define HAVE_LONG_LONG_INT 1
@@ -359,7 +359,7 @@ are set when opening a binary file on Windows. */
 #define HAVE_STDLIB_H 1
 
 /* Define to 1 if you have the <strings.h> header file. */
-/* #undef HAVE_STRINGS_H */
+#define HAVE_STRINGS_H 1
 
 /* Define to 1 if you have the <signal.h> header file. */
 #define HAVE_SIGNAL_H 1
@@ -383,7 +383,7 @@ are set when opening a binary file on Windows. */
 /* #undef HAVE_STRCASECMP */
 
 /* Define to 1 if you have the `strlcat' function. */
-/* #undef HAVE_STRLCAT */
+//#define HAVE_STRLCAT 1
 
 /* Define to 1 if you have the `strtoll' function. */
 #define HAVE_STRTOLL 1
@@ -401,7 +401,7 @@ are set when opening a binary file on Windows. */
 /* #undef HAVE_SYSCONF */
 
 /* Define to 1 if you have the <sys/param.h> header file. */
-/* #undef HAVE_SYS_PARAM_H */
+#define HAVE_SYS_PARAM_H 1
 
 /* Define to 1 if you have the <sys/resource.h> header file. */
 /* #undef HAVE_SYS_RESOURCE_H */
@@ -410,7 +410,7 @@ are set when opening a binary file on Windows. */
 #define HAVE_SYS_STAT_H 1
 
 /* Define to 1 if you have the <sys/time.h> header file. */
-/* #undef HAVE_SYS_TIME_H */
+#define HAVE_SYS_TIME_H 1
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
@@ -419,13 +419,13 @@ are set when opening a binary file on Windows. */
 #define HAVE_TIME_H 1
 
 /* Define to 1 if the system has the type `uchar'. */
-/* #undef HAVE_UCHAR */
+//#define HAVE_UCHAR 1
 
 /* Define to 1 if the system has the type `uint'. */
-/* #undef HAVE_UINT */
+//#define HAVE_UINT 1
 
 /* Define to 1 if the system has the type `uint64'. */
-/* #undef HAVE_UINT64 */
+//#define HAVE_UINT64 1
 
 #ifdef __linux__
 #define TCHAR char
@@ -448,7 +448,7 @@ are set when opening a binary file on Windows. */
 
 /* if true, HDF5 is at least version 1.10. 3 and allows parallel I/O
 with zip */
-/* #undef HDF5_SUPPORTS_PAR_FILTERS */
+#define HDF5_SUPPORTS_PAR_FILTERS 1
 
 /* if true, HDF5 is at least version 1.10.5 and supports UTF8 paths */
 #define HDF5_UTF8_PATHS
@@ -632,7 +632,7 @@ with zip */
 /* #undef USE_PNETCDF */
 
 /* if true, use stdio instead of posixio */
-/* #undef USE_STDIO */
+#define USE_STDIO 1
 
 /* if true, multi-filters enabled*/
 #define ENABLE_MULTIFILTERS 1
