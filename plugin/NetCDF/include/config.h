@@ -11,6 +11,11 @@ See \ref copyright file for more info.
 #ifndef CONFIG_H
 #define CONFIG_H
 
+
+#if defined(__clang__) && (defined(_WIN32) || defined(_WIN64))
+#pragma clang optimize off
+#endif
+
 #ifdef _MSC_VER
 
 /* Prevent an issue where there is a circular inclusion
