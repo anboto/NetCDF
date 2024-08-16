@@ -67,8 +67,8 @@ CONSOLE_APP_MAIN
 				UppLog() << "\nAll tests OK\n";
 			}
 		};
-		Test("datalib.nc");
-		Test("datalib_hdf5.nc", NC_NETCDF4);
+		Test(AppendFileName(GetExeFolder(), "datalib.nc"));
+		Test(AppendFileName(GetExeFolder(), "datalib_hdf5.nc"), NC_NETCDF4);
 	} catch (Exc err) {
 		UppLog() << "\n" << Format(t_("Problem found: %s"), err);
 		SetExitCode(-1);
