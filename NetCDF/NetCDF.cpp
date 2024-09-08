@@ -233,7 +233,7 @@ bool NetCDFFile::ExistVar(const char *name) {
 int NetCDFFile::GetId(const char *name) {
 	int ret;
 	if ((retval = nc_inq_varid(ncid, name, &ret)))
-    	throw Exc(nc_strerror(retval)); 
+    	throw Exc(Format(t_("%s (%s)"), nc_strerror(retval), name)); 
     return ret;
 }
 
