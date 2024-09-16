@@ -320,10 +320,10 @@ void NetCDFFile::GetDouble(const char *name, Eigen::VectorXd &data) {
 	GetVariableData(lastvarid, type, dims);
 	
 	if (type != NC_DOUBLE)
-		throw Exc(Format("Data is not double. Found %s", TypeName(type)));
+		throw Exc(Format("'%s' is not double. Found %s", name, TypeName(type)));
 	
 	if (dims.size() != 1)
-		throw Exc(Format("Wrong number of dimensions in GetDouble(). Found %d", dims.size()));
+		throw Exc(Format("Wrong number of dimensions in GetDouble(%s). Found %d", name, dims.size()));
 	
 	data.resize(dims[0]);
 	if ((retval = nc_get_var_double(ncid, lastvarid, data.data())))
@@ -337,14 +337,14 @@ void NetCDFFile::GetDouble(const char *name, Vector<double> &data) {
 	GetVariableData(lastvarid, type, dims);
 	
 	if (type != NC_DOUBLE)
-		throw Exc(Format("Data is not double. Found %s", TypeName(type)));
+		throw Exc(Format("'%s' is not double. Found %s", name, TypeName(type)));
 	
 	if (dims.size() == 0) 
 		data.SetCount(1);
 	else if (dims.size() == 1)
 		data.SetCount(dims[0]);
 	else
-		throw Exc(Format("Wrong number of dimensions in GetDouble(). Found %d", dims.size()));
+		throw Exc(Format("Wrong number of dimensions in GetDouble(%s). Found %d", name, dims.size()));
 	
 	if ((retval = nc_get_var_double(ncid, lastvarid, data.begin())))
 	    throw Exc(nc_strerror(retval));		
@@ -357,10 +357,10 @@ void NetCDFFile::GetDouble(const char *name, Eigen::MatrixXd &data) {
 	GetVariableData(lastvarid, type, dims);
 	
 	if (type != NC_DOUBLE)
-		throw Exc(Format("Data is not double. Found %s", TypeName(type)));	
+		throw Exc(Format("'%s' is not double. Found %s", name, TypeName(type)));	
 
 	if (dims.size() != 2)
-		throw Exc(Format("Wrong number of dimensions in GetDouble(). Found %d", dims.size()));
+		throw Exc(Format("Wrong number of dimensions in GetDouble(%s). Found %d", name, dims.size()));
 	
 	int sz = 1;
 	for (int n : dims)
@@ -380,7 +380,7 @@ void NetCDFFile::GetDouble(const char *name, MultiDimMatrixRowMajor<double> &d) 
 	GetVariableData(lastvarid, type, dims);
 	
 	if (type != NC_DOUBLE)
-		throw Exc(Format("Data is not double. Found %s", TypeName(type)));	
+		throw Exc(Format("'%s' is not double. Found %s", name, TypeName(type)));	
 	
 	d.Resize(dims);
 	
@@ -395,10 +395,10 @@ void NetCDFFile::GetInt(const char *name, Vector<int> &data) {
 	GetVariableData(lastvarid, type, dims);
 	
 	if (type != NC_INT)
-		throw Exc(Format("Data is not int. Found %s", TypeName(type)));
+		throw Exc(Format("'%s' is not int. Found %s", name, TypeName(type)));
 	
 	if (dims.size() != 1)
-		throw Exc(Format("Wrong number of dimensions in GetInt(). Found %d", dims.size()));
+		throw Exc(Format("Wrong number of dimensions in GetInt(%s). Found %d", name, dims.size()));
 	
 	data.SetCount(dims[0]);
 	if ((retval = nc_get_var_int(ncid, lastvarid, data.begin())))
@@ -412,10 +412,10 @@ void NetCDFFile::GetFloat(const char *name, Vector<float> &data) {
 	GetVariableData(lastvarid, type, dims);
 	
 	if (type != NC_FLOAT)
-		throw Exc(Format("Data is not float. Found %s", TypeName(type)));
+		throw Exc(Format("'%s' is not float. Found %s", name, TypeName(type)));
 	
 	if (dims.size() != 1)
-		throw Exc(Format("Wrong number of dimensions in GetFloat(). Found %d", dims.size()));
+		throw Exc(Format("Wrong number of dimensions in GetFloat(%s). Found %d", name, dims.size()));
 	
 	data.SetCount(dims[0]);
 	if ((retval = nc_get_var_float(ncid, lastvarid, data.begin())))
@@ -429,10 +429,10 @@ void NetCDFFile::GetString(const char *name, Vector<String> &data) {
 	GetVariableData0(lastvarid, type, dims);
 	
 	if (type != NC_CHAR)
-		throw Exc(Format("Data is not char. Found %s", TypeName(type)));
+		throw Exc(Format("'%s' is not char. Found %s", name, TypeName(type)));
 	
 	if (dims.size() != 2)
-		throw Exc(Format("Wrong number of dimensions in GetString(). Found %d", dims.size()));
+		throw Exc(Format("Wrong number of dimensions in GetString(%s). Found %d", name, dims.size()));
 	
 	Buffer<char> str(dims[0]*dims[1]);
 	if ((retval = nc_get_var_text(ncid, lastvarid, ~str)))
