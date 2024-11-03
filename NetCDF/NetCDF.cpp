@@ -336,9 +336,6 @@ void NetCDFFile::GetDouble(const char *name, Vector<double> &data) {
 	Vector<int> dims;
 	GetVariableData(lastvarid, type, dims);
 	
-	if (type != NC_DOUBLE)
-		throw Exc(Format("'%s' is not double. Found %s", name, TypeName(type)));
-	
 	if (dims.size() == 0) 
 		data.SetCount(1);
 	else if (dims.size() == 1)
@@ -346,18 +343,28 @@ void NetCDFFile::GetDouble(const char *name, Vector<double> &data) {
 	else
 		throw Exc(Format("Wrong number of dimensions in GetDouble(%s). Found %d", name, dims.size()));
 	
-	if ((retval = nc_get_var_double(ncid, lastvarid, data.begin())))
-	    throw Exc(nc_strerror(retval));		
+	if (type == NC_DOUBLE) {
+		if ((retval = nc_get_var_double(ncid, lastvarid, data.begin())))
+		    throw Exc(nc_strerror(retval));		
+	} else if (type == NC_INT) {
+		Vector<int> dataInt;
+		if (dims.size() == 0) 
+			dataInt.SetCount(1);
+		else if (dims.size() == 1)
+			dataInt.SetCount(dims[0]);
+		if ((retval = nc_get_var_int(ncid, lastvarid, dataInt.begin())))
+		    throw Exc(nc_strerror(retval));
+		for (int r = 0; r < dataInt.size(); ++r) 
+			data[r] = dataInt[r];
+	} else
+		throw Exc(Format("'%s' is neither double nor int. Found %s", name, TypeName(type)));
 }
 	
 void NetCDFFile::GetDouble(const char *name, Eigen::MatrixXd &data) {
 	lastvarid = GetId(name);
 	nc_type type;
 	Vector<int> dims;
-	GetVariableData(lastvarid, type, dims);
-	
-	if (type != NC_DOUBLE)
-		throw Exc(Format("'%s' is not double. Found %s", name, TypeName(type)));	
+	GetVariableData(lastvarid, type, dims);	
 
 	if (dims.size() != 2)
 		throw Exc(Format("Wrong number of dimensions in GetDouble(%s). Found %d", name, dims.size()));
@@ -366,11 +373,22 @@ void NetCDFFile::GetDouble(const char *name, Eigen::MatrixXd &data) {
 	for (int n : dims)
 		sz *= n;
 	
-	Buffer<double> d(sz);
-	if ((retval = nc_get_var_double(ncid, lastvarid, d.Get())))
-    	throw Exc(nc_strerror(retval));
-		
-	CopyRowMajor(d.Get(), dims[0], dims[1], data);
+	if (type == NC_DOUBLE) {
+		Buffer<double> d(sz);
+		if ((retval = nc_get_var_double(ncid, lastvarid, d.Get())))
+	    	throw Exc(nc_strerror(retval));
+		CopyRowMajor(d.Get(), dims[0], dims[1], data);
+	} else if (type == NC_INT) {
+		Buffer<int> d(sz);
+		if ((retval = nc_get_var_int(ncid, lastvarid, d.Get())))
+	    	throw Exc(nc_strerror(retval));
+		data.resize(dims[0], dims[1]);
+		for (int r = 0; r < dims[0]; ++r) {
+			for (int c = 0; c < dims[1]; ++c)	
+				data(r, c) = d[c + r*dims[1]];
+		}
+	} else
+		throw Exc(Format("'%s' is neither double nor int. Found %s", name, TypeName(type)));
 }
 
 void NetCDFFile::GetDouble(const char *name, MultiDimMatrixRowMajor<double> &d) {

@@ -41,6 +41,7 @@ public:
 	void GetVariableData(const char *name, nc_type &type, Vector<int> &dims);
 	
 	String GetVariableString(const char *name);
+	void GetInt(const char *name, Eigen::MatrixXi &data);
 	int GetInt(const char *name);
 	float GetFloat(const char *name);
 	double GetDouble(const char *name);
