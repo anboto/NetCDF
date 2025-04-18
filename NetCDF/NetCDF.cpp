@@ -6,6 +6,8 @@
 
 #include "NetCDF.h"
 
+#include <Functions4U/EnableWarnings.h>
+
 namespace Upp {
 
 void NetCDFFile::Open(const char *file) {
@@ -374,12 +376,12 @@ void NetCDFFile::GetDouble(const char *name, Eigen::MatrixXd &data) {
 		sz *= n;
 	
 	if (type == NC_DOUBLE) {
-		Buffer<double> d(sz);
+		Buffer<double> d((size_t)sz);
 		if ((retval = nc_get_var_double(ncid, lastvarid, d.Get())))
 	    	throw Exc(nc_strerror(retval));
 		CopyRowMajor(d.Get(), dims[0], dims[1], data);
 	} else if (type == NC_INT) {
-		Buffer<int> d(sz);
+		Buffer<int> d((size_t)sz);
 		if ((retval = nc_get_var_int(ncid, lastvarid, d.Get())))
 	    	throw Exc(nc_strerror(retval));
 		data.resize(dims[0], dims[1]);
@@ -452,13 +454,13 @@ void NetCDFFile::GetString(const char *name, Vector<String> &data) {
 	if (dims.size() != 2)
 		throw Exc(Format("Wrong number of dimensions in GetString(%s). Found %d", name, dims.size()));
 	
-	Buffer<char> str(dims[0]*dims[1]);
+	Buffer<char> str((size_t)(dims[0]*dims[1]));
 	if ((retval = nc_get_var_text(ncid, lastvarid, ~str)))
     	throw Exc(nc_strerror(retval));	
 	data.SetCount(dims[0]);
 	StringBuffer bstr(dims[1]);
 	for (int i = 0; i < dims[0]; ++i) {
-		memcpy(bstr.begin(), str+i*dims[1], dims[1]);
+		memcpy(bstr.begin(), str+i*dims[1], (size_t)dims[1]);
 		bstr.Strlen();
 		data[i] = bstr;
 	}
@@ -587,7 +589,7 @@ NetCDFFile &NetCDFFile::Set(const char *name, const Eigen::VectorXd &d) {
     	throw Exc(nc_strerror(retval));	
 		
 	int dimid;
-	if ((retval = nc_def_dim(ncid, name, d.size(), &dimid)))
+	if ((retval = nc_def_dim(ncid, name, (size_t)d.size(), &dimid)))
        	throw Exc(nc_strerror(retval));	
 
 	int varid;
@@ -610,7 +612,7 @@ NetCDFFile &NetCDFFile::Set(const char *name, const Vector<double> &d) {
     	throw Exc(nc_strerror(retval));	
 		
 	int dimid;
-	if ((retval = nc_def_dim(ncid, name, d.size(), &dimid)))
+	if ((retval = nc_def_dim(ncid, name, (size_t)d.size(), &dimid)))
        	throw Exc(nc_strerror(retval));	
 
 	int varid;
@@ -635,10 +637,10 @@ NetCDFFile &NetCDFFile::Set(const char *name, const Eigen::MatrixXd &d) {
 	String namedim;
 	int dimids[2];
 	namedim = Format("%s_0", name);
-	if ((retval = nc_def_dim(ncid, ~namedim, d.rows(), &dimids[0])))
+	if ((retval = nc_def_dim(ncid, ~namedim, (size_t)d.rows(), &dimids[0])))
        	throw Exc(nc_strerror(retval));	
     namedim = Format("%s_1", name);
-	if ((retval = nc_def_dim(ncid, ~namedim, d.cols(), &dimids[1])))
+	if ((retval = nc_def_dim(ncid, ~namedim, (size_t)d.cols(), &dimids[1])))
        	throw Exc(nc_strerror(retval));	
     
 	int varid;
@@ -664,10 +666,10 @@ NetCDFFile &NetCDFFile::Set(const char *name, const MultiDimMatrixRowMajor<doubl
     	throw Exc(nc_strerror(retval));	
 		
 	String namedim;
-	Buffer<int> dimids(d.GetNumAxis());
+	Buffer<int> dimids((size_t)d.GetNumAxis());
 	for (int i = 0; i < d.GetNumAxis(); ++i) {
 		namedim = Format("%s_%d", name, i);
-		if ((retval = nc_def_dim(ncid, ~namedim, d.size(i), &dimids[i])))
+		if ((retval = nc_def_dim(ncid, ~namedim, (size_t)d.size(i), &dimids[i])))
 	       	throw Exc(nc_strerror(retval));	
 	}
 	int varid;
