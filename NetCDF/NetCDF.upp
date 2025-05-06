@@ -1,7 +1,5 @@
 description "Network Common Data Form (NetCDF) library wrapper\377B44,169,203";
 
-noblitz;
-
 uses
 	Core,
 	plugin/Hdf5,

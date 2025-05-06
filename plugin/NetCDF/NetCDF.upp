@@ -1,7 +1,5 @@
 description "NetCDF library wrapper\37744,169,203";
 
-noblitz;
-
 options(BUILDER_OPTION) NOWARNINGS;
 
 uses
@@ -87,7 +85,6 @@ file
 	libdispatch\ncbytes.c,
 	libdispatch\ncexhash.c,
 	libdispatch\nchashmap.c,
-	libdispatch\ncjson.c,
 	libdispatch\nclist.c,
 	libdispatch\nclistmgr.c,
 	libdispatch\nclog.c,
@@ -110,7 +107,6 @@ file
 	libsrc\posixio.c,
 	libsrc\pstdint.h,
 	libsrc\putget.c,
-	libsrc\s3io.c,
 	libsrc\v1hpg.c,
 	libsrc\var.c,
 	libsrc\XGetopt.c,
