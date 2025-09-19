@@ -269,16 +269,25 @@ String NetCDFFile::GetString(const char *name) {
 	Vector<int> dims;
 	GetVariableData0(lastvarid, type, dims);
 	
-	if (type != NC_CHAR)
+	if (type == NC_CHAR) {
+		if (dims.size() != 1)
+			throw Exc(Format("Wrong number of dimensions in GetString(). Found %d", dims.size()));
+		
+		StringBuffer data(dims[0]);
+		if ((retval = nc_get_var_text(ncid, lastvarid, ~data)))
+	    	throw Exc(nc_strerror(retval));	
+		return String(data);
+	} else if (type == NC_STRING) {
+		char *value;
+		if ((retval = nc_get_var_string(ncid, lastvarid, &value)))
+    		throw Exc(nc_strerror(retval));	
+
+		String ret(value);
+		nc_free_string(1, &value);
+		return ret;
+	} else
 		throw Exc(Format("Data is not char. Found %s", TypeName(type)));
-	
-	if (dims.size() != 1)
-		throw Exc(Format("Wrong number of dimensions in GetString(). Found %d", dims.size()));
-	
-	StringBuffer data(dims[0]);
-	if ((retval = nc_get_var_text(ncid, lastvarid, ~data)))
-    	throw Exc(nc_strerror(retval));	
-	return String(data);
+	return String();
 }
 
 void NetCDFFile::GetVariableData(const char *name, nc_type &type, Vector<int> &dims) {
@@ -448,22 +457,37 @@ void NetCDFFile::GetString(const char *name, Vector<String> &data) {
 	Vector<int> dims;
 	GetVariableData0(lastvarid, type, dims);
 	
-	if (type != NC_CHAR)
+	if (type == NC_CHAR) {
+		if (dims.size() != 2)
+			throw Exc(Format("Wrong number of dimensions in GetString(%s) (char). Found %d", name, dims.size()));
+		
+		Buffer<char> str((size_t)(dims[0]*dims[1]));
+		if ((retval = nc_get_var_text(ncid, lastvarid, ~str)))
+	    	throw Exc(nc_strerror(retval));	
+		data.SetCount(dims[0]);
+		StringBuffer bstr(dims[1]);
+		for (int i = 0; i < dims[0]; ++i) {
+			memcpy(bstr.begin(), str+i*dims[1], (size_t)dims[1]);
+			bstr.Strlen();
+			data[i] = bstr;
+		}
+	} else if (type == NC_STRING) {
+		if (dims.size() != 1)
+			throw Exc(Format("Wrong number of dimensions in GetString(%s) (string). Found %d", name, dims.size()));
+		
+		int len = dims[0];
+		data.SetCount(len);
+		
+		UVector<char *> values(2);		
+		if ((retval = nc_get_var_string(ncid, lastvarid, values)))
+		    throw Exc(nc_strerror(retval));	
+		
+		for (int i = 0; i < len; i++)
+			data[i] = String(values[i]);
+		
+		nc_free_string((size_t)len, values);
+	} else
 		throw Exc(Format("'%s' is not char. Found %s", name, TypeName(type)));
-	
-	if (dims.size() != 2)
-		throw Exc(Format("Wrong number of dimensions in GetString(%s). Found %d", name, dims.size()));
-	
-	Buffer<char> str((size_t)(dims[0]*dims[1]));
-	if ((retval = nc_get_var_text(ncid, lastvarid, ~str)))
-    	throw Exc(nc_strerror(retval));	
-	data.SetCount(dims[0]);
-	StringBuffer bstr(dims[1]);
-	for (int i = 0; i < dims[0]; ++i) {
-		memcpy(bstr.begin(), str+i*dims[1], (size_t)dims[1]);
-		bstr.Strlen();
-		data[i] = bstr;
-	}
 }
 
 String NetCDFFile::GetVariableString(const char *name) {
@@ -472,7 +496,8 @@ String NetCDFFile::GetVariableString(const char *name) {
 	GetVariableData(name, type, dims);
 	if (dims.size() == 0) {
 		switch(type) {
-		case NC_CHAR:	return GetString(name);
+		case NC_CHAR:
+		case NC_STRING:	return GetString(name);
 		case NC_BYTE:
 		case NC_SHORT:
 		case NC_INT:	return FormatInt(GetInt(name));
