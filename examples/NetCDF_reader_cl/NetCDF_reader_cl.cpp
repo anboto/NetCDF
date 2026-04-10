@@ -20,11 +20,11 @@ CONSOLE_APP_MAIN
 		String file = command[0];
 		
 		NetCDFFile cdf(file);			
-		UppLog() << Format("\nFile '%s' loaded", file);
+		UppLog() << F("\nFile '%s' loaded", file);
 		
 		UppLog() << cdf.ToString();
 	} catch (Exc err) {
-		UppLog() << "\n" << Format(t_("Problem found: %s"), err);
+		UppLog() << "\n" << F(t_("Problem found: %s"), err);
 		SetExitCode(-1);
 	}
 		

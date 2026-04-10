@@ -13,7 +13,7 @@ void NetCDFFile::Open(const char *file) {
 	Close();
 	
 	if (!FileExists(file))
-		throw Exc(Format("File '%s' does not exist", file));
+		throw Exc(F("File '%s' does not exist", file));
 
 	if ((retval = nc_open(file, NC_NOWRITE, &ncid)))
        throw Exc(nc_strerror(retval)); 
@@ -64,7 +64,7 @@ String NetCDFFile::GetFileFormat() {
     case NC_FORMAT_64BIT_DATA:		return "64-bit data (v2)";
     case NC_FORMAT_NETCDF4:			return "NetCDF-4 (HDF5)";
     case NC_FORMAT_NETCDF4_CLASSIC:	return "NetCDF-4 Classic (HDF5)";
-    default:						return Format("Unknown format %d", format);
+    default:						return F("Unknown format %d", format);
     }
 }
 	
@@ -171,7 +171,7 @@ String NetCDFFile::TypeName(nc_type type) {
     case NC_OPAQUE: return "NC_OPAQUE";
     case NC_ENUM: 	return "NC_ENUM";
     case NC_COMPOUND:return "NC_COMPOUND";
-    default: 		return Format("Type %d is unknown", type);
+    default: 		return F("Type %d is unknown", type);
     }
 }
 
@@ -234,7 +234,7 @@ bool NetCDFFile::ExistVar(const char *name) {
 int NetCDFFile::GetId(const char *name) {
 	int ret;
 	if ((retval = nc_inq_varid(ncid, name, &ret)))
-    	throw Exc(Format(t_("%s (%s)"), nc_strerror(retval), name)); 
+    	throw Exc(F(t_("%s (%s)"), nc_strerror(retval), name)); 
     return ret;
 }
 
@@ -270,7 +270,7 @@ String NetCDFFile::GetString(const char *name) {
 	
 	if (type == NC_CHAR) {
 		if (dims.size() != 1)
-			throw Exc(Format("Wrong number of dimensions in GetString(). Found %d", dims.size()));
+			throw Exc(F("Wrong number of dimensions in GetString(). Found %d", dims.size()));
 		
 		StringBuffer data(dims[0]);
 		if ((retval = nc_get_var_text(ncid, lastvarid, ~data)))
@@ -285,7 +285,7 @@ String NetCDFFile::GetString(const char *name) {
 		nc_free_string(1, &value);
 		return ret;
 	} else
-		throw Exc(Format("Data is not char. Found %s", TypeName(type)));
+		throw Exc(F("Data is not char. Found %s", TypeName(type)));
 	return String();
 }
 
@@ -330,10 +330,10 @@ void NetCDFFile::GetDouble(const char *name, Eigen::VectorXd &data) {
 	GetVariableData(lastvarid, type, dims);
 	
 	if (type != NC_DOUBLE)
-		throw Exc(Format("'%s' is not double. Found %s", name, TypeName(type)));
+		throw Exc(F("'%s' is not double. Found %s", name, TypeName(type)));
 	
 	if (dims.size() != 1)
-		throw Exc(Format("Wrong number of dimensions in GetDouble(%s). Found %d", name, dims.size()));
+		throw Exc(F("Wrong number of dimensions in GetDouble(%s). Found %d", name, dims.size()));
 	
 	data.resize(dims[0]);
 	if ((retval = nc_get_var_double(ncid, lastvarid, data.data())))
@@ -351,7 +351,7 @@ void NetCDFFile::GetDouble(const char *name, Vector<double> &data) {
 	else if (dims.size() == 1)
 		data.SetCount(dims[0]);
 	else
-		throw Exc(Format("Wrong number of dimensions in GetDouble(%s). Found %d", name, dims.size()));
+		throw Exc(F("Wrong number of dimensions in GetDouble(%s). Found %d", name, dims.size()));
 	
 	if (type == NC_DOUBLE) {
 		if ((retval = nc_get_var_double(ncid, lastvarid, data.begin())))
@@ -367,7 +367,7 @@ void NetCDFFile::GetDouble(const char *name, Vector<double> &data) {
 		for (int r = 0; r < dataInt.size(); ++r) 
 			data[r] = dataInt[r];
 	} else
-		throw Exc(Format("'%s' is neither double nor int. Found %s", name, TypeName(type)));
+		throw Exc(F("'%s' is neither double nor int. Found %s", name, TypeName(type)));
 }
 	
 void NetCDFFile::GetDouble(const char *name, Eigen::MatrixXd &data) {
@@ -377,7 +377,7 @@ void NetCDFFile::GetDouble(const char *name, Eigen::MatrixXd &data) {
 	GetVariableData(lastvarid, type, dims);	
 
 	if (dims.size() != 2)
-		throw Exc(Format("Wrong number of dimensions in GetDouble(%s). Found %d", name, dims.size()));
+		throw Exc(F("Wrong number of dimensions in GetDouble(%s). Found %d", name, dims.size()));
 	
 	int sz = 1;
 	for (int n : dims)
@@ -398,7 +398,7 @@ void NetCDFFile::GetDouble(const char *name, Eigen::MatrixXd &data) {
 				data(r, c) = d[c + r*dims[1]];
 		}
 	} else
-		throw Exc(Format("'%s' is neither double nor int. Found %s", name, TypeName(type)));
+		throw Exc(F("'%s' is neither double nor int. Found %s", name, TypeName(type)));
 }
 
 void NetCDFFile::GetDouble(const char *name, MultiDimMatrixRowMajor<double> &d) {
@@ -408,7 +408,7 @@ void NetCDFFile::GetDouble(const char *name, MultiDimMatrixRowMajor<double> &d) 
 	GetVariableData(lastvarid, type, dims);
 	
 	if (type != NC_DOUBLE)
-		throw Exc(Format("'%s' is not double. Found %s", name, TypeName(type)));	
+		throw Exc(F("'%s' is not double. Found %s", name, TypeName(type)));	
 	
 	d.Resize(dims);
 	
@@ -423,10 +423,10 @@ void NetCDFFile::GetInt(const char *name, Vector<int> &data) {
 	GetVariableData(lastvarid, type, dims);
 	
 	if (type != NC_INT)
-		throw Exc(Format("'%s' is not int. Found %s", name, TypeName(type)));
+		throw Exc(F("'%s' is not int. Found %s", name, TypeName(type)));
 	
 	if (dims.size() != 1)
-		throw Exc(Format("Wrong number of dimensions in GetInt(%s). Found %d", name, dims.size()));
+		throw Exc(F("Wrong number of dimensions in GetInt(%s). Found %d", name, dims.size()));
 	
 	data.SetCount(dims[0]);
 	if ((retval = nc_get_var_int(ncid, lastvarid, data.begin())))
@@ -440,10 +440,10 @@ void NetCDFFile::GetFloat(const char *name, Vector<float> &data) {
 	GetVariableData(lastvarid, type, dims);
 	
 	if (type != NC_FLOAT)
-		throw Exc(Format("'%s' is not float. Found %s", name, TypeName(type)));
+		throw Exc(F("'%s' is not float. Found %s", name, TypeName(type)));
 	
 	if (dims.size() != 1)
-		throw Exc(Format("Wrong number of dimensions in GetFloat(%s). Found %d", name, dims.size()));
+		throw Exc(F("Wrong number of dimensions in GetFloat(%s). Found %d", name, dims.size()));
 	
 	data.SetCount(dims[0]);
 	if ((retval = nc_get_var_float(ncid, lastvarid, data.begin())))
@@ -458,7 +458,7 @@ void NetCDFFile::GetString(const char *name, Vector<String> &data) {
 	
 	if (type == NC_CHAR) {
 		if (dims.size() != 2)
-			throw Exc(Format("Wrong number of dimensions in GetString(%s) (char). Found %d", name, dims.size()));
+			throw Exc(F("Wrong number of dimensions in GetString(%s) (char). Found %d", name, dims.size()));
 		
 		Buffer<char> str((size_t)(dims[0]*dims[1]));
 		if ((retval = nc_get_var_text(ncid, lastvarid, ~str)))
@@ -472,7 +472,7 @@ void NetCDFFile::GetString(const char *name, Vector<String> &data) {
 		}
 	} else if (type == NC_STRING) {
 		if (dims.size() != 1)
-			throw Exc(Format("Wrong number of dimensions in GetString(%s) (string). Found %d", name, dims.size()));
+			throw Exc(F("Wrong number of dimensions in GetString(%s) (string). Found %d", name, dims.size()));
 		
 		int len = dims[0];
 		data.SetCount(len);
@@ -486,7 +486,7 @@ void NetCDFFile::GetString(const char *name, Vector<String> &data) {
 		
 		nc_free_string((size_t)len, values);
 	} else
-		throw Exc(Format("'%s' is not char. Found %s", name, TypeName(type)));
+		throw Exc(F("'%s' is not char. Found %s", name, TypeName(type)));
 }
 
 String NetCDFFile::GetVariableString(const char *name) {
@@ -660,10 +660,10 @@ NetCDFFile &NetCDFFile::Set(const char *name, const Eigen::MatrixXd &d) {
 		
 	String namedim;
 	int dimids[2];
-	namedim = Format("%s_0", name);
+	namedim = F("%s_0", name);
 	if ((retval = nc_def_dim(ncid, ~namedim, (size_t)d.rows(), &dimids[0])))
        	throw Exc(nc_strerror(retval));	
-    namedim = Format("%s_1", name);
+    namedim = F("%s_1", name);
 	if ((retval = nc_def_dim(ncid, ~namedim, (size_t)d.cols(), &dimids[1])))
        	throw Exc(nc_strerror(retval));	
     
@@ -692,7 +692,7 @@ NetCDFFile &NetCDFFile::Set(const char *name, const MultiDimMatrixRowMajor<doubl
 	String namedim;
 	Buffer<int> dimids((size_t)d.GetNumAxis());
 	for (int i = 0; i < d.GetNumAxis(); ++i) {
-		namedim = Format("%s_%d", name, i);
+		namedim = F("%s_%d", name, i);
 		if ((retval = nc_def_dim(ncid, ~namedim, (size_t)d.size(i), &dimids[i])))
 	       	throw Exc(nc_strerror(retval));	
 	}
@@ -735,18 +735,18 @@ String NetCDFFile::ToString0() {
 		indent += String('\t', groupPathIds.size()-1);
 	
 	Vector<String> listGlobal = ListGlobalAttributes();
-	ret << indent << Format("Global attributes (%d):", listGlobal.size());
+	ret << indent << F("Global attributes (%d):", listGlobal.size());
 	for (const String &name : listGlobal) {
 		nc_type type = GetAttributeType(name);
-		ret << indent << Format(">%s (%s): %s", name, NetCDFFile::TypeName(type), GetAttributeString(name));
+		ret << indent << F(">%s (%s): %s", name, NetCDFFile::TypeName(type), GetAttributeString(name));
 	}
 	Vector<String> listVars = ListVariables();
-	ret << indent << Format("Variables (%d):", listVars.size());
+	ret << indent << F("Variables (%d):", listVars.size());
 	for (const String &name : listVars) {
 		nc_type type;
 		Vector<int> dims;
 		GetVariableData(name, type, dims);
-		ret << indent << Format(">%s (%s)", name, NetCDFFile::TypeName(type));
+		ret << indent << F(">%s (%s)", name, NetCDFFile::TypeName(type));
 		if (!dims.IsEmpty()) {
 			String sdims;
 			for (int i = 0; i < dims.size(); ++i) {
@@ -754,18 +754,18 @@ String NetCDFFile::ToString0() {
 					sdims << ",";
 				sdims << dims[i];
 			}
-			ret << Format("(%s)", sdims);
+			ret << F("(%s)", sdims);
 		}
-		ret << Format(": %s", GetVariableString(name));
+		ret << F(": %s", GetVariableString(name));
 		Vector<String> attributes = ListAttributes(name);
 		for (const String &attr : attributes) {
 			nc_type tp = GetAttributeType(attr);
-			ret << indent << Format("\tattrib>%s (%s): %s", attr, NetCDFFile::TypeName(tp), GetAttributeString(attr));
+			ret << indent << F("\tattrib>%s (%s): %s", attr, NetCDFFile::TypeName(tp), GetAttributeString(attr));
 		}
 	}
-	ret << indent << Format("SubGroups (%d):", ListGroups().size());
+	ret << indent << F("SubGroups (%d):", ListGroups().size());
 	for (int i = 0; i < ListGroups().size(); ++i) {
-		ret << indent << "\t" << Format("Group: %s", ListGroups()[i]);	
+		ret << indent << "\t" << F("Group: %s", ListGroups()[i]);	
 		ChangeGroup(ListGroups()[i]);
 		ret << ToString0();
 		ChangeGroupUp();
@@ -774,7 +774,7 @@ String NetCDFFile::ToString0() {
 }
    
 String NetCDFFile::ToString() {
-	String ret = Format("\nFormat: %s", GetFileFormat());
+	String ret = F("\nFormat: %s", GetFileFormat());
 	
 	ChangeGroupRoot();
 	

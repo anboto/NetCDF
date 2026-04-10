@@ -5,7 +5,7 @@
 using namespace Upp;
 
 #include <NetCDF/NetCDF.h>
-  
+#include <Functions4U/Functions4U.h>
 
 CONSOLE_APP_MAIN
 {
@@ -70,7 +70,7 @@ CONSOLE_APP_MAIN
 		Test(AppendFileName(GetExeFolder(), "datalib.nc"));
 		Test(AppendFileName(GetExeFolder(), "datalib_hdf5.nc"), NC_NETCDF4);
 	} catch (Exc err) {
-		UppLog() << "\n" << Format(t_("Problem found: %s"), err);
+		UppLog() << "\n" << F(t_("Problem found: %s"), err);
 		SetExitCode(-1);
 	}
 		
