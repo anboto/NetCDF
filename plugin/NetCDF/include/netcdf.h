@@ -109,8 +109,16 @@ extern "C" {
  * different value than the above defaults, create an attribute with
  * the same type as the variable and this reserved name. The value you
  * give the attribute will be used as the fill value for that
- * variable. */
+ * variable. 
+ * Refactored to NC_FillValue in support of 
+ * https://github.com/Unidata/netcdf-c/issues/2858, and parameterized
+ * behind an unsafe macros option as part of 
+ * https://github.com/Unidata/netcdf-c/issues/3029
+ */
+#ifdef NETCDF_ENABLE_LEGACY_MACROS
 #define _FillValue      "_FillValue"
+#endif
+#define NC_FillValue      "_FillValue"
 #define NC_FILL         0       /**< Argument to nc_set_fill() to clear NC_NOFILL */
 #define NC_NOFILL       0x100   /**< Argument to nc_set_fill() to turn off filling of data. */
 
@@ -119,6 +127,7 @@ extern "C" {
         0x0002
    All upper 16 bits are unused except
         0x20000
+        0x40000
 */
 
 /* Lower 16 bits */
@@ -134,8 +143,25 @@ extern "C" {
 #define NC_64BIT_DATA    0x0020  /**< CDF-5 format: classic model but 64 bit dimensions and sizes */
 #define NC_CDF5          NC_64BIT_DATA  /**< Alias NC_CDF5 to NC_64BIT_DATA */
 
-#define NC_UDF0          0x0040  /**< User-defined format 0. */
-#define NC_UDF1          0x0080  /**< User-defined format 1. */
+/** @name User-Defined Format Mode Flags
+ * Mode flags for user-defined formats (UDF0-UDF9).
+ * Use with nc_def_user_format() to register custom format handlers.
+ * Can not be combined with other mode flags (e.g., NC_NETCDF4).
+ * See @ref user_defined_formats for details.
+ * @{ */
+#define NC_UDF0          0x0040  /**< User-defined format 0 (bit 6). */
+#define NC_UDF1          0x0080  /**< User-defined format 1 (bit 7). */
+/* UDF2-UDF9 use bits 16, 19-25 (skipping bits 17-18 which are used by
+ * NC_NOATTCREORD=0x20000 and NC_NODIMSCALE_ATTACH=0x40000) */
+#define NC_UDF2          0x10000  /**< User-defined format 2 (bit 16). */
+#define NC_UDF3          0x80000  /**< User-defined format 3 (bit 19). */
+#define NC_UDF4          0x100000  /**< User-defined format 4 (bit 20). */
+#define NC_UDF5          0x200000  /**< User-defined format 5 (bit 21). */
+#define NC_UDF6          0x400000  /**< User-defined format 6 (bit 22). */
+#define NC_UDF7          0x800000  /**< User-defined format 7 (bit 23). */
+#define NC_UDF8          0x1000000  /**< User-defined format 8 (bit 24). */
+#define NC_UDF9          0x2000000  /**< User-defined format 9 (bit 25). */
+/**@}*/
 
 #define NC_CLASSIC_MODEL 0x0100 /**< Enforce classic model on netCDF-4. Mode flag for nc_create(). */
 #define NC_64BIT_OFFSET  0x0200  /**< Use large (64-bit) file offsets. Mode flag for nc_create(). */
@@ -167,6 +193,10 @@ Use this in mode flags for both nc_create() and nc_open(). */
 #define NC_NODIMSCALE_ATTACH 0x40000 /**< Disable the netcdf-4 (hdf5) attaching of dimscales to variables (#2128) */
 
 #define NC_MAX_MAGIC_NUMBER_LEN 8 /**< Max len of user-defined format magic number. */
+/** Maximum number of user-defined format slots (UDF0-UDF9).
+ * @see nc_def_user_format(), nc_inq_user_format()
+ * @see @ref user_defined_formats */
+#define NC_MAX_UDF_FORMATS 10
 
 /** Format specifier for nc_set_default_format() and returned
  *  by nc_inq_format. This returns the format as provided by
@@ -191,7 +221,7 @@ Use this in mode flags for both nc_create() and nc_open(). */
 #define NC_FORMAT_CDF5    NC_FORMAT_64BIT_DATA
 
 /* Define a mask covering format flags only */
-#define NC_FORMAT_ALL (NC_64BIT_OFFSET|NC_64BIT_DATA|NC_CLASSIC_MODEL|NC_NETCDF4|NC_UDF0|NC_UDF1)
+#define NC_FORMAT_ALL (NC_64BIT_OFFSET|NC_64BIT_DATA|NC_CLASSIC_MODEL|NC_NETCDF4|NC_UDF0|NC_UDF1|NC_UDF2|NC_UDF3|NC_UDF4|NC_UDF5|NC_UDF6|NC_UDF7|NC_UDF8|NC_UDF9)
 
 /**@}*/
 
@@ -220,9 +250,27 @@ Use this in mode flags for both nc_create() and nc_open(). */
 #define NC_FORMATX_PNETCDF   (4)
 #define NC_FORMATX_DAP2      (5)
 #define NC_FORMATX_DAP4      (6)
-#define NC_FORMATX_UDF0      (8)
-#define NC_FORMATX_UDF1      (9)
-#define NC_FORMATX_NCZARR    (10)
+/** @name User-Defined Format Constants
+ * Format constants for user-defined formats (UDF0-UDF9).
+ * Used internally to identify dispatch tables.
+ * @see nc_def_user_format(), nc_inq_user_format()
+ * @see @ref user_defined_formats
+ * @{ */
+#define NC_FORMATX_UDF0      (8)  /**< User-defined format 0 */
+#define NC_FORMATX_UDF1      (9)  /**< User-defined format 1 */
+/**@}*/
+#define NC_FORMATX_NCZARR    (10) /**< Added in version 4.8.0 */
+/** @name User-Defined Format Constants (continued)
+ * @{ */
+#define NC_FORMATX_UDF2      (11) /**< User-defined format 2 */
+#define NC_FORMATX_UDF3      (12) /**< User-defined format 3 */
+#define NC_FORMATX_UDF4      (13) /**< User-defined format 4 */
+#define NC_FORMATX_UDF5      (14) /**< User-defined format 5 */
+#define NC_FORMATX_UDF6      (15) /**< User-defined format 6 */
+#define NC_FORMATX_UDF7      (16) /**< User-defined format 7 */
+#define NC_FORMATX_UDF8      (17) /**< User-defined format 8 */
+#define NC_FORMATX_UDF9      (18) /**< User-defined format 9 */
+/**@}*/
 #define NC_FORMATX_UNDEFINED (0)
 
   /* To avoid breaking compatibility (such as in the python library),
@@ -238,6 +286,7 @@ Use this in mode flags for both nc_create() and nc_open(). */
 #define NC_FORMAT_DAP2      NC_FORMATX_DAP2 /**< \deprecated As of 4.4.0, use NC_FORMATX_DAP2 */
 #define NC_FORMAT_DAP4      NC_FORMATX_DAP4 /**< \deprecated As of 4.4.0, use NC_FORMATX_DAP4 */
 #define NC_FORMAT_UNDEFINED NC_FORMATX_UNDEFINED /**< \deprecated As of 4.4.0, use NC_FORMATX_UNDEFINED */
+#define NC_FORMATX_ZARR     NC_FORMATX_NCZARR /**< \deprecated as of 4.8.0, use NC_FORMATX_NCZARR */
 
 /**@}*/
 
@@ -521,8 +570,15 @@ by the desired type. */
 #define NC_EOBJECT       (-140)    /**< Some object exists when it should not */
 #define NC_ENOOBJECT     (-141)    /**< Some object not found */
 #define NC_EPLUGIN       (-142)    /**< Unclassified failure in accessing a dynamically loaded plugin> */
+#define NC_ENOTZARR      (-143)    /**< Malformed (NC)Zarr file */
+#define NC_EZARRMETA     (-144)    /**< Invalid (NC)Zarr file consolidated metadata */
 
-#define NC4_LAST_ERROR   (-142)    /**< @internal All netCDF errors > this. */
+#define NC4_LAST_ERROR   (-144)    /**< @internal All netCDF errors > this. */
+
+/*
+ * Don't forget to update docs/all-error-codes.md if adding new error codes here!
+ *
+ */
 
 /* Errors for all remote access methods(e.g. DAP and CDMREMOTE)*/
 #define NC_EURL         (NC_EDAPURL)   /**< Malformed URL */
@@ -566,11 +622,59 @@ nc_inq_libvers(void);
 EXTERNL const char *
 nc_strerror(int ncerr);
 
-/* Set up user-defined format. */
+/** Register a user-defined format.
+ *
+ * This function registers a custom format handler (dispatch table) for one of
+ * the 10 available UDF slots (UDF0-UDF9). After registration, files can be
+ * opened using the specified mode flag, or automatically via magic number detection.
+ *
+ * @param mode_flag One of NC_UDF0 through NC_UDF9, optionally combined with
+ *                  other mode flags (e.g., NC_UDF0 | NC_NETCDF4). Only one
+ *                  UDF flag should be specified.
+ * @param dispatch_table Pointer to the dispatch table containing function
+ *                       pointers for all netCDF API operations. The dispatch
+ *                       table's version field must match NC_DISPATCH_VERSION.
+ * @param magic_number Optional magic number string (max 8 bytes) for automatic
+ *                     format detection. Files starting with this string will
+ *                     automatically use this dispatch table. Pass NULL if not using
+ *                     magic number detection.
+ *
+ * @return NC_NOERR on success, error code on failure.
+ * @retval NC_EINVAL Invalid mode_flag or dispatch table version mismatch
+ * @retval NC_ENOTNC4 UDF support not enabled in this build
+ *
+ * @see nc_inq_user_format()
+ * @see @ref user_defined_formats
+ *
+ * @author Edward Hartnett
+ * @date 2/2/25
+ */
 typedef struct NC_Dispatch NC_Dispatch;
 EXTERNL int
 nc_def_user_format(int mode_flag, NC_Dispatch *dispatch_table, char *magic_number);
 
+/** Query a registered user-defined format.
+ *
+ * This function retrieves the dispatch table and magic number for a previously
+ * registered user-defined format.
+ *
+ * @param mode_flag One of NC_UDF0 through NC_UDF9. Only one UDF flag should
+ *                  be specified.
+ * @param dispatch_table Pointer to receive the dispatch table pointer. Pass NULL
+ *                       if not needed.
+ * @param magic_number Buffer to receive the magic number string (must be at least
+ *                     NC_MAX_MAGIC_NUMBER_LEN + 1 bytes). Pass NULL if not needed.
+ *
+ * @return NC_NOERR on success, error code on failure.
+ * @retval NC_EINVAL Invalid mode_flag or UDF slot not registered
+ * @retval NC_ENOTNC4 UDF support not enabled in this build
+ *
+ * @see nc_def_user_format()
+ * @see @ref user_defined_formats
+ *
+ * @author Edward Hartnett
+ * @date 2/2/25
+ */
 EXTERNL int
 nc_inq_user_format(int mode_flag, NC_Dispatch **dispatch_table, char *magic_number);
 
@@ -763,19 +867,6 @@ EXTERNL int
 nc_inq_vlen(int ncid, nc_type xtype, char *name, size_t *datum_sizep,
             nc_type *base_nc_typep);
 
-/* When you read VLEN type the library will actually allocate the
- * storage space for the data. This storage space must be freed, so
- * pass the pointer back to this function, when you're done with the
- * data, and it will free the vlen memory.
- * These two functions are deprecated in favor of the nc_reclaim_data function.
- */
-
-EXTERNL int
-nc_free_vlen(nc_vlen_t *vl);
-
-EXTERNL int
-nc_free_vlens(size_t len, nc_vlen_t vlens[]);
-
 /* Put or get one element in a vlen array. */
 EXTERNL int
 nc_put_vlen_element(int ncid, int typeid1, void *vlen_element,
@@ -784,15 +875,6 @@ nc_put_vlen_element(int ncid, int typeid1, void *vlen_element,
 EXTERNL int
 nc_get_vlen_element(int ncid, int typeid1, const void *vlen_element,
                     size_t *len, void *data);
-
-/* When you read the string type the library will allocate the storage
- * space for the data. This storage space must be freed, so pass the
- * pointer back to this function, when you're done with the data, and
- * it will free the string memory.
- * This function is deprecated in favor of the nc_reclaim_data function.
- */
-EXTERNL int
-nc_free_string(size_t len, char **data);
 
 /* Find out about a user defined type. */
 EXTERNL int
@@ -1785,20 +1867,49 @@ nc_put_var_string(int ncid, int varid, const char **op);
 EXTERNL int
 nc_get_var_string(int ncid, int varid, char **ip);
 
-/* Begin recursive instance walking functions */
+/* Begin instance walking functions */
+
+/* When you read an array of string typed instances, the library will allocate
+ * the storage space for the strings in the array (but not the array itself).
+ * The strings must be freed eventually, so pass the pointer to the array plus
+ * the number of elements in the array to this function when you're done with
+ * the data, and it will free the all the string instances.
+ * The caller is still responsible for free'ing the array itself,
+ * if it was dynamically allocated.
+ */
+EXTERNL int
+nc_free_string(size_t nelems, char **data);
+
+/* When you read an array of VLEN typed instances, the library will allocate
+ * the storage space for the data in each VLEN in the array (but not the array itself).
+ * That VLEN data must be freed eventually, so pass the pointer to the array plus
+ * the number of elements in the array to this function when you're done with
+ * the data, and it will free the all the VLEN instances.
+ * The caller is still responsible for free'ing the array itself,
+ * if it was dynamically allocated.
+ *
+ * WARNING: this function only works if the basetype of the vlen type
+ * is fixed size. This means it is an atomic type except NC_STRING,
+ * or an NC_ENUM, or and NC_OPAQUE, or an NC_COMPOUND where all
+ * the fields of the compound type are themselves fixed size.
+ */
+EXTERNL int
+nc_free_vlens(size_t nelems, nc_vlen_t vlens[]);
+
+/* This function is a special case of "nc_free_vlens" where nelem == 1 */
+EXTERNL int
+nc_free_vlen(nc_vlen_t *vl);
 
 /**
-Reclaim a vector of instances of arbitrary type.  Intended for
-use with e.g. nc_get_vara or the input to e.g. nc_put_vara.
-This recursively walks the top-level instances to reclaim any
-nested data such as vlen or strings or such.
-
-Assumes it is passed a pointer to count instances of xtype.
-Reclaims any nested data.
+Reclaim an array of instances of an arbitrary type.
+This function is intended for use with e.g. nc_get_vara
+or the input to e.g. nc_put_vara.
+This function recursively walks the top-level instances to
+reclaim any nested data such as vlen or strings or such.
 
 WARNING: nc_reclaim_data does not reclaim the top-level
 memory because we do not know how it was allocated.  However
-nc_reclaim_data_all does reclaim top-level memory.
+nc_reclaim_data_all does attempt to reclaim top-level memory.
 
 WARNING: all data blocks below the top-level (e.g. string
 instances) will be reclaimed, so do not call if there is any
@@ -1807,11 +1918,10 @@ static data in the instance.
 Should work for any netcdf format.
 */
 
-EXTERNL int nc_reclaim_data(int ncid, nc_type xtypeid, void* memory, size_t count);
-EXTERNL int nc_reclaim_data_all(int ncid, nc_type xtypeid, void* memory, size_t count);
+EXTERNL int nc_reclaim_data(int ncid, nc_type xtypeid, void* memory, size_t nelems);
+EXTERNL int nc_reclaim_data_all(int ncid, nc_type xtypeid, void* memory, size_t nelems);
 
 /**
-
 Copy vector of arbitrary type instances.  This recursively walks
 the top-level instances to copy any nested data such as vlen or
 strings or such.
@@ -1826,9 +1936,6 @@ Should work for any netcdf format.
 
 EXTERNL int nc_copy_data(int ncid, nc_type xtypeid, const void* memory, size_t count, void* copy);
 EXTERNL int nc_copy_data_all(int ncid, nc_type xtypeid, const void* memory, size_t count, void** copyp);
-
-/* Instance dumper for debugging */
-EXTERNL int nc_dump_data(int ncid, nc_type xtypeid, void* memory, size_t count, char** buf);
 
 /* end recursive instance walking functions */
 

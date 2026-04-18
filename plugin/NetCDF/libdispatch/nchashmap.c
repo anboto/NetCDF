@@ -68,10 +68,14 @@ extern nchashkey_t hash_fast(const char*, size_t length);
 
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 
+#ifndef SIZE_MAX
+#define SIZE_MAX ((size_t)-1)
+#endif
+
 /* Forward */
 static const unsigned int NC_nprimes;
 static const unsigned int NC_primes[16386];
-static unsigned int findPrimeGreaterThan(size_t val);
+static size_t findPrimeGreaterThan(size_t val);
 
 extern void printhashmapstats(NC_hashmap* hm);
 extern void printhashmap(NC_hashmap* hm);
@@ -160,7 +164,7 @@ locate(NC_hashmap* hash, nchashkey_t hashkey, const char* key, size_t keysize, s
 nchashkey_t
 NC_hashmapkey(const char* key, size_t size)
 {
-    return NC_crc64(0,(void*)key,(unsigned int)size);
+    return (nchashkey_t)NC_crc64(0,(void*)key,(unsigned int)size);
 }
 
 NC_hashmap*
@@ -175,12 +179,14 @@ NC_hashmapnew(size_t startsize)
     if(startsize == 0 || startsize < MINTABLESIZE)
 	startsize = MINTABLESIZE;
     else {
+    if(startsize > SIZE_MAX / 4){nullfree(hm);return 0;}
 	startsize *= 4;
 	startsize /= 3;
 	startsize = findPrimeGreaterThan(startsize);
 	if(startsize == 0) {nullfree(hm); return 0;}
     }
     hm->table = (NC_hentry*)calloc(sizeof(NC_hentry), (size_t)startsize);
+    if(hm->table == NULL) {nullfree(hm);return 0;}
     hm->alloc = startsize;
     hm->active = 0;
     return hm;
@@ -399,7 +405,7 @@ static int isPrime(size_t n)
 }
 
 /* Function to return the smallest prime number greater than N */
-static int nextPrime(size_t val)
+static size_t nextPrime(size_t val)
 {
     if (val <= 1)
         return 2;
@@ -424,18 +430,18 @@ Binary search prime table for first prime just greater than or
 equal to val
 */
 
-static unsigned int
+static size_t
 findPrimeGreaterThan(size_t val)
 {
-      int n = NC_nprimes;
-      int L = 1; /* skip leading flag number */
-      int R = (n - 2); /* skip trailing flag */
-      unsigned int v = 0;
-      int m;
+      size_t n = NC_nprimes;
+      size_t L = 1; /* skip leading flag number */
+      size_t R = (n - 2); /* skip trailing flag */
+      size_t v = 0;
+      size_t m;
 
       if(val >= 0xFFFFFFFF)
         return 0; /* Too big */
-      v = (unsigned int)val;
+      v = val;
 
       if (v > NC_primes[n - 2]) {
         /*

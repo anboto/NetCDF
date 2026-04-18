@@ -4,6 +4,8 @@
  * @file
  * Functions for defining and inquiring about variables. @note The
  * order of functions in this file affects the doxygen documentation.
+ *
+ * @author Dennis Heimbigner, Edward Hartnett
  */
 
 #include "config.h"
@@ -256,7 +258,7 @@ nc_def_var(int ncid, const char *name, nc_type xtype,
    @return ::NC_ENOTINDEFINE Not in define mode.  This is returned for
    netCDF classic, 64-bit offset, or 64-bit data files, or for
    netCDF-4 files, when they were created with ::NC_CLASSIC_MODEL flag by
-   nc_creae().
+   nc_create().
    @return ::NC_EPERM Attempt to create object in read-only file.
    @return ::NC_ELATEDEF (NetCDF-4 only). Returned when user attempts
    to set fill value after data are written.
@@ -478,7 +480,7 @@ nc_def_var_deflate(int ncid, int varid, int shuffle, int deflate, int deflate_le
    Lossless compression like zlib must also be used (see nc_def_var_deflate()).
 
    Producers of large datasets may find that using quantize with
-   compression will result in significant improvent in the final data
+   compression will result in significant improvement in the final data
    size.
 
    A notable feature of all the quantization algorithms is data remain 
@@ -554,6 +556,7 @@ nc_def_var_deflate(int ncid, int varid, int shuffle, int deflate, int deflate_le
    netcdf-4 file.
    @return ::NC_ELATEDEF Too late to change settings for this variable.
    @return ::NC_EINVAL Invalid input.
+   @since 4.9.0
    @author Charlie Zender, Ed Hartnett
  */
 int
@@ -632,7 +635,7 @@ nc_def_var_fletcher32(int ncid, int varid, int fletcher32)
 
    Chunked storage means the data are stored as chunks, of
    user-configurable size. Chunked storage is required for variable
-   with one or more unlimted dimensions, or variable which use
+   with one or more unlimited dimensions, or variable which use
    compression, or any other filter.
 
    The total size of a chunk must be less than 4 GiB. That is, the
@@ -644,7 +647,7 @@ nc_def_var_fletcher32(int ncid, int varid, int fletcher32)
    variable, they cannot be changed.
 
    @note Scalar variables may have a storage of NC_CONTIGUOUS or
-   NC_COMPACT. Attempts to set chunking on a scalare variable will
+   NC_COMPACT. Attempts to set chunking on a scalar variable will
    cause ::NC_EINVAL to be returned. Only non-scalar variables can
    have chunking.
 
@@ -674,7 +677,7 @@ nc_def_var_fletcher32(int ncid, int varid, int fletcher32)
    to set the chunking for that variable.
    @return ::NC_ENOTINDEFINE Not in define mode.  This is returned for
    netCDF classic or 64-bit offset files, or for netCDF-4 files, when
-   they wwere created with ::NC_CLASSIC_MODEL flag by nc_create().
+   they were created with ::NC_CLASSIC_MODEL flag by nc_create().
    @return ::NC_EPERM Attempt to create object in read-only file.
    @return ::NC_EBADCHUNK Returns if the chunk size specified for a
    variable is larger than the length of the dimensions associated with
@@ -738,7 +741,7 @@ nc_def_var_chunking(int ncid, int varid, int storage, const size_t *chunksizesp)
 /**
    Define endianness of a variable.
 
-   With this function the endianness (i.e. order of bits in integers) can
+   With this function the endianness (i.e. order of bytes in integers) can
    be changed on a per-variable basis. By default, the endianness is the
    same as the default endianness of the platform. But with
    nc_def_var_endianness the endianness can be explicitly set for a
@@ -769,7 +772,7 @@ nc_def_var_chunking(int ncid, int varid, int storage, const size_t *chunksizesp)
    set the chunking for that variable.
    @return ::NC_ENOTINDEFINE Not in define mode. This is returned for
    netCDF classic or 64-bit offset files, or for netCDF-4 files, when
-   they wwere created with ::NC_CLASSIC_MODEL flag by nc_create().
+   they were created with ::NC_CLASSIC_MODEL flag by nc_create().
    @return ::NC_EPERM Attempt to create object in read-only file.
 
    @section nc_def_var_endian_example Example
@@ -858,6 +861,7 @@ nc_def_var_endian(int ncid, int varid, int endian)
  * @returns ::NC_ENOTINDEFINE Not in define mode.
  * @returns ::NC_EINVAL Invalid input, or zlib filter already applied
  * to this var.
+ * @since 4.0.0
  * @author Ed Hartnett
  */
 int
@@ -867,10 +871,8 @@ nc_def_var_szip(int ncid, int varid, int options_mask, int pixels_per_block)
 
     /* This will cause H5Pset_szip to be called when the var is
      * created. */
-    unsigned int params[2];
-    params[0] = options_mask;
-    params[1] = pixels_per_block;
-    if ((ret = nc_def_var_filter(ncid, varid, HDF5_FILTER_SZIP, 2, params)))
+    unsigned int params[2] = {(unsigned int)options_mask, (unsigned int)pixels_per_block};
+    if ((ret = nc_def_var_filter(ncid, varid, H5Z_FILTER_SZIP, 2, params)))
         return ret;
 
     return NC_NOERR;
@@ -1034,7 +1036,7 @@ NC_inq_recvar(int ncid, int varid, int* nrecdimsp, int *is_recdim)
         if(status != NC_NOERR) return status;
         if(nunlimdims == 0) return status;
 
-        if (!(unlimids = malloc(nunlimdims * sizeof(int))))
+        if (!(unlimids = malloc((size_t)nunlimdims * sizeof(int))))
             return NC_ENOMEM;
         status = nc_inq_unlimdims(ncid, &nunlimdims, unlimids); /* for group or file, not variable */
         if(status != NC_NOERR) {
@@ -1229,15 +1231,18 @@ NC_getshape(int ncid, int varid, int ndims, size_t* shape)
    @param ncid The file ID.
    @param varid The variable ID.
    @param start Pointer to start array. If NULL ::NC_EINVALCOORDS will
-   be returned for non-scalar variable.
+   be returned for non-scalar variable. This array must be same size
+   as variable's number of dimensions.
    @param count Pointer to pointer to count array. If *count is NULL,
    an array of the correct size will be allocated, and filled with
    counts that represent the full extent of the variable. In this
-   case, the memory must be freed by the caller.
+   case, the memory must be freed by the caller. If provided, this
+   array must be same size as variable's number of dimensions.
    @param stride Pointer to pointer to stride array. If NULL, stide is
    ignored. If *stride is NULL an array of the correct size will be
    allocated, and filled with ones. In this case, the memory must be
-   freed by the caller.
+   freed by the caller. If provided, this
+   array must be same size as variable's number of dimensions.
 
    @return ::NC_NOERR No error.
    @return ::NC_EBADID Bad ncid.
@@ -1263,7 +1268,7 @@ NC_check_nulls(int ncid, int varid, const size_t *start, size_t **count,
     /* If count is NULL, assume full extent of var. */
     if (!*count)
     {
-        if (!(*count = malloc(varndims * sizeof(size_t))))
+        if (!(*count = malloc((size_t)varndims * sizeof(size_t))))
             return NC_ENOMEM;
         if ((stat = NC_getshape(ncid, varid, varndims, *count)))
         {
@@ -1279,7 +1284,7 @@ NC_check_nulls(int ncid, int varid, const size_t *start, size_t **count,
     {
         int i;
 
-        if (!(*stride = malloc(varndims * sizeof(ptrdiff_t))))
+        if (!(*stride = malloc((size_t)varndims * sizeof(ptrdiff_t))))
             return NC_ENOMEM;
         for (i = 0; i < varndims; i++)
             (*stride)[i] = 1;
@@ -1291,19 +1296,18 @@ NC_check_nulls(int ncid, int varid, const size_t *start, size_t **count,
 /**
    @name Free String Resources
 
-   Use this functions to free resources associated with ::NC_STRING
-   data.
+   Use these functions to free resources associated with ::NC_STRING data.
 */
 /*! @{ */
 /**
    Free string space allocated by the library.
 
-   When you read string type the library will allocate the storage
-   space for the data. This storage space must be freed, so pass the
-   pointer back to this function, when you're done with the data, and
-   it will free the string memory.
+   When you read an array string typed data the library will allocate the storage
+   space for the data. The allocated strings must be freed, so pass the
+   pointer to the array plus a count of the number of elements in the array to this function,
+   when you're done with the data, and it will free the allocated string memory.
 
-   WARNING: This does not free the data vector itself, only
+   WARNING: This does not free the top-level array itself, only
    the strings to which it points.
 
    @param len The number of character arrays in the array.
@@ -1315,7 +1319,7 @@ NC_check_nulls(int ncid, int varid, const size_t *start, size_t **count,
 int
 nc_free_string(size_t len, char **data)
 {
-    int i;
+    size_t i;
     for (i = 0; i < len; i++)
         free(data[i]);
     return NC_NOERR;
@@ -1415,7 +1419,7 @@ nc_set_var_chunk_cache(int ncid, int varid, size_t size, size_t nelems,
    will be put here. @ref ignored_if_null.
    @param nelemsp The number of chunk slots in the raw data chunk
    cache hash table will be put here. @ref ignored_if_null.
-   @param preemptionp The preemption will be put here. The preemtion
+   @param preemptionp The preemption will be put here. The preemption
    value is between 0 and 1 inclusive and indicates how much chunks
    that have been fully read are favored for preemption. A value of
    zero means fully read chunks are treated no differently than other

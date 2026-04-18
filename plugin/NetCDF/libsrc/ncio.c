@@ -7,7 +7,6 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "netcdf.h"
@@ -15,6 +14,7 @@
 #include "fbits.h"
 #include "ncuri.h"
 #include "ncrc.h"
+#include "ncutil.h"
 
 /* With the advent of diskless io, we need to provide
    for multiple ncio packages at the same time,
@@ -38,11 +38,11 @@ extern int ffio_open(const char*,int,off_t,size_t,size_t*,void*,ncio**,void** co
      extern int mmapio_open(const char*,int,off_t,size_t,size_t*,void*,ncio**,void** const);
 #  endif
 
-#ifdef ENABLE_BYTERANGE
+#ifdef NETCDF_ENABLE_BYTERANGE
     extern int httpio_open(const char*,int,off_t,size_t,size_t*,void*,ncio**,void** const);
 #endif
 
-#ifdef ENABLE_S3_SDK
+#ifdef NETCDF_ENABLE_S3
     extern int s3io_open(const char*,int,off_t,size_t,size_t*,void*,ncio**,void** const);
 #endif
 
@@ -50,7 +50,7 @@ extern int ffio_open(const char*,int,off_t,size_t,size_t*,void*,ncio**,void** co
      extern int memio_open(const char*,int,off_t,size_t,size_t*,void*,ncio**,void** const);
 
 /* Forward */
-#ifdef ENABLE_BYTERANGE
+#ifdef NETCDF_ENABLE_BYTERANGE
 static int urlmodetest(const char* path);
 #endif
 
@@ -71,7 +71,7 @@ ncio_create(const char *path, int ioflags, size_t initialsz,
     }
 #  endif /*USE_MMAP*/
 
-#ifdef USE_STDIO
+#ifdef false//USE_STDIO
     return stdio_create(path,ioflags,initialsz,igeto,igetsz,sizehintp,parameters,iopp,mempp);
 #elif defined(USE_FFIO)
     return ffio_create(path,ioflags,initialsz,igeto,igetsz,sizehintp,parameters,iopp,mempp);
@@ -86,7 +86,7 @@ ncio_open(const char *path, int ioflags,
 		     void* parameters,
                      ncio** iopp, void** const mempp)
 {
-#ifdef ENABLE_BYTERANGE
+#ifdef NETCDF_ENABLE_BYTERANGE
     int modetest = urlmodetest(path);
 #endif
 
@@ -104,18 +104,18 @@ ncio_open(const char *path, int ioflags,
         return mmapio_open(path,ioflags,igeto,igetsz,sizehintp,parameters,iopp,mempp);
     }
 #  endif /*USE_MMAP*/
-#  ifdef ENABLE_BYTERANGE
+#  ifdef NETCDF_ENABLE_BYTERANGE
    if(modetest == NC_HTTP) {
         return httpio_open(path,ioflags,igeto,igetsz,sizehintp,parameters,iopp,mempp);
    }
-#  ifdef ENABLE_S3_SDK
+#  ifdef NETCDF_ENABLE_S3
    if(modetest == NC_S3SDK) {
        return s3io_open(path,ioflags,igeto,igetsz,sizehintp,parameters,iopp,mempp);
    }
 #  endif
-#  endif /*ENABLE_BYTERANGE*/
+#  endif /*NETCDF_ENABLE_BYTERANGE*/
 
-#ifdef USE_STDIO
+#ifdef false //USE_STDIO
     return stdio_open(path,ioflags,igeto,igetsz,sizehintp,parameters,iopp,mempp);
 #elif defined(USE_FFIO)
     return ffio_open(path,ioflags,igeto,igetsz,sizehintp,parameters,iopp,mempp);
@@ -182,7 +182,7 @@ NC_HTTP => byterange
 NC_S3SDK => s3
 0 => Not URL
 */
-#ifdef ENABLE_BYTERANGE
+#ifdef NETCDF_ENABLE_BYTERANGE
 static int
 urlmodetest(const char* path)
 {

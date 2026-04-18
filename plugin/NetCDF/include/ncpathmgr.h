@@ -14,6 +14,9 @@
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
 #endif
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -30,9 +33,9 @@ Assumptions about Input path:
 2. It conforms to the format expected by one of the following:
        Linux (/x/y/...),
        Cygwin (/cygdrive/D/...),
-       Windows|MINGW (D:\...),
+       Windows|MINGW|MSYS (D:\...),
        Windows network path (\\mathworks\...)
-       MSYS (/D/...),
+       MSYS (/D/...) if -im was used but only if local platform is MINGW | MSYS.
 4. It is encoded in the local platform character set.  Note that
    for most systems, this is utf-8. But for Windows, the
    encoding is most likely some form of ANSI code page, probably
@@ -47,11 +50,11 @@ Parsing Rules:
 2. A leading '/cygdrive/D' will be converted to
    drive letter D if D is alpha-char.
 3. A leading D:/... is treated as a windows drive letter
-4. A leading /d/... is treated as a windows drive letter
-   if the platform is MSYS2.
-5. A leading // is a windows network path and is converted
+4. A leading // is a windows network path and is converted
    to a drive letter using the fake drive letter "/".
    So '//svc/x/y' translates to '/:/svc/x/y'.
+5. If the platform is MINGW or MSYS and -im was specified,
+   then a leading /D/ is treated as a drive letter.
 6. All other cases are assumed to be Unix variants with no drive letter. 
 
 After parsing, the following pieces of information are kept in a struct.
@@ -71,12 +74,13 @@ The re-write rules (unparsing) are given the above three pieces
 of info + the current platform + the root mount point (if any).
 The conversion rules are as follows.
 
-  Platform  | No Input Driv       | Input Drive
+  Platform  | No Input Drive      | Input Drive
 ----------------------------------------------------
 NCPD_NIX    | <path>              | /<drive>/path
 NCPD_CYGWIN | /<path>             | /cygdrive/<drive>/<path>
 NCPD_WIN    | <mountpoint>/<path> | <drive>:<path>
 NCPD_MSYS   | <mountpoint>/<path> | <drive>:<path>
+NCPD_MINGW  | <mountpoint>/<path> | <drive>:<path>
 
 Notes:
 1. MINGW without MSYS is treated like WIN.
@@ -89,6 +93,11 @@ Notes:
 #if defined _WIN32 || defined __MINGW32__
 #define WINPATH 1
 #endif
+#endif
+#ifdef _WIN32
+#define STAT struct _stat64 *
+#else
+#define STAT struct _stat *
 #endif
 
 /* Define wrapper constants for use with NCaccess */
@@ -124,9 +133,8 @@ Notes:
 #endif
 #endif /*_WIN32*/
 
-
 /*
-WARNING: you should never need to explictly call this function;
+WARNING: you should never need to explicitly call this function;
 rather it is invoked as part of the wrappers for e.g. NCfopen, etc.
 This function is intended to be Idempotent: f(f(x) == f(x).
 This means it is ok to call it repeatedly with no harm.
@@ -166,6 +174,15 @@ EXTERNL int NChasdriveletter(const char* path);
    because it first converts to wide character and then to utf8. */
 EXTERNL int NCpath2utf8(const char* path, char** u8p);
 
+/* Convert stdin, stdout, stderr to use binary mode (\r\n -> \n) */
+EXTERNL int NCstdbinary(void);
+
+/* Signal that input paths should be treated as NCPD_NIX, NCPD_MSYS, or NCPD_UNKNOWN (defaulted) */
+EXTERNL void NCpathsetplatform(int inputtype);
+
+/* Force the platform based on various CPP flags */
+EXTERNL void NCpathforceplatform(void);
+
 /* Wrap various stdio and unistd IO functions.
 It is especially important to use for windows so that
 NCpathcvt (above) is invoked on the path.
@@ -183,7 +200,7 @@ EXTERNL char* NCgetcwd(char* cwdbuf, size_t len);
 EXTERNL int NCmkstemp(char* buf);
 
 #ifdef HAVE_SYS_STAT_H
-EXTERNL int NCstat(const char* path, struct stat* buf);
+EXTERNL int NCstat(const char* path, STAT buf);
 #endif
 #ifdef HAVE_DIRENT_H
 EXTERNL DIR* NCopendir(const char* path);
@@ -232,11 +249,5 @@ EXTERNL int NCgetinputpathkind(const char* inpath);
 EXTERNL const char* NCgetkindname(int kind);
 EXTERNL void printutf8hex(const char* s, char* sx);
 EXTERNL int getmountpoint(char*, size_t);
-
-/**************************************************/
-/* From dutil.c */
-EXTERNL char* NC_backslashEscape(const char* s);
-EXTERNL char* NC_backslashUnescape(const char* esc);
-EXTERNL char* NC_shellUnescape(const char* esc);
 
 #endif /* _NCPATHMGR_H_ */

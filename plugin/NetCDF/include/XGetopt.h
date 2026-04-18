@@ -16,12 +16,6 @@
 #ifndef XGETOPT_H
 #define XGETOPT_H
 
-#ifndef _WIN32
-
-#  define GTOPT_EXTRA
-
-#else
-
 #include <windows.h>
 #include <stdio.h>
 #include <tchar.h>
@@ -42,7 +36,5 @@
 GTOPT_EXTRA extern int optind, opterr;
 GTOPT_EXTRA extern TCHAR* optarg;
 GTOPT_EXTRA extern int getopt(int argc, TCHAR *argv[], TCHAR *optstring);
-
-#endif
 
 #endif //XGETOPT_H

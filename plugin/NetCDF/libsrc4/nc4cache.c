@@ -44,7 +44,7 @@
  * 4133; the default may be set with configure option
  * --with-chunk-cache-nelems.
  *
- * @param preemption Preemption stragety, a float between 0 and 1
+ * @param preemption Preemption strategy, a float between 0 and 1
  * inclusive and indicates the weighting according to which chunks
  * which have been fully read or written are penalized when
  * determining which chunks to flush from cache. A value of 0 means
@@ -84,7 +84,7 @@ nc_set_chunk_cache(size_t size, size_t nelems, float preemption)
  * if NULL.
  * @param nelemsp Pointer that gets number of elements to hold in
  * cache. Ignored if NULL.
- * @param preemptionp Pointer that gets preemption stragety (between 0
+ * @param preemptionp Pointer that gets preemption strategy (between 0
  * and 1). Ignored if NULL.
  *
  * @return ::NC_NOERR No error.
@@ -127,8 +127,8 @@ nc_set_chunk_cache_ints(int size, int nelems, int preemption)
     NCglobalstate* gs = NC_getglobalstate();
     if (size <= 0 || nelems <= 0 || preemption < 0 || preemption > 100)
         return NC_EINVAL;
-    gs->chunkcache.size = size;
-    gs->chunkcache.nelems = nelems;
+    gs->chunkcache.size = (size_t)size;
+    gs->chunkcache.nelems = (size_t)nelems;
     gs->chunkcache.preemption = (float)preemption / 100;
     return NC_NOERR;
 }

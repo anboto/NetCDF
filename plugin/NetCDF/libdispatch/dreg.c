@@ -2,8 +2,8 @@
  * Copyright 2018, University Corporation for Atmospheric Research
  * See netcdf/COPYRIGHT file for copying and redistribution conditions.
  */
-#ifdef REGEDIT
 
+#ifdef _WIN32
 #include "config.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -13,13 +13,27 @@
 
 #include <windows.h>
 #include <io.h>
+
+
+
 #include <wchar.h>
 #include <locale.h>
 //#include <direct.h>
-
-#ifdef _WIN32
-__declspec(dllexport)
+#if defined(DLL_NETCDF) /* define when library is a DLL */
+#  if defined(DLL_EXPORT) /* define when building the library */
+#   define MSC_EXTRA __declspec(dllexport)
+#  else
+#   define MSC_EXTRA __declspec(dllimport)
+#  endif
+#else
+#  define MSC_EXTRA
+#endif	/* defined(DLL_NETCDF) */
+#ifndef EXTERNL
+# define EXTERNL MSC_EXTRA extern
 #endif
+
+
+EXTERNL
 int
 getmountpoint(char* keyvalue, size_t size)
 {

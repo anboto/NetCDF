@@ -3,6 +3,15 @@
  *   See netcdf/COPYRIGHT file for copying and redistribution conditions.
  *********************************************************************/
 
+/**
+ * @file
+ * Library initialization and finalization.
+ *
+ * These functions handle the initialization and finalization of the
+ * netCDF library, including all dispatch tables and external
+ * libraries.
+ */
+
 #include "config.h"
 
 #ifdef USE_PARALLEL
@@ -11,13 +20,8 @@
 
 #include "ncdispatch.h"
 
-extern int NC3_initialize(void);
-extern int NC3_finalize(void);
-
 #ifdef USE_NETCDF4
 #include "nc4internal.h"
-extern int NC4_initialize(void);
-extern int NC4_finalize(void);
 #endif
 
 #ifdef USE_HDF5
@@ -26,15 +30,24 @@ extern int NC_HDF5_initialize(void);
 extern int NC_HDF5_finalize(void);
 #endif
 
-#ifdef ENABLE_DAP2
+/*
+ * NETCDF_ENABLE_DAP is the top-level option that enables DAP support.
+ * Setting it implies NETCDF_ENABLE_DAP2; NETCDF_ENABLE_DAP4 is also
+ * set when HDF5 support is available. The extern declarations here
+ * use the protocol-specific macros, while nc_initialize() below
+ * guards the NCD2_initialize() call with the parent NETCDF_ENABLE_DAP
+ * macro since DAP2 is always enabled when DAP is enabled.
+ */
+#ifdef NETCDF_ENABLE_DAP2
 extern int NCD2_initialize(void);
 extern int NCD2_finalize(void);
 #endif
 
-#ifdef ENABLE_DAP4
+#ifdef NETCDF_ENABLE_DAP4
 extern int NCD4_initialize(void);
 extern int NCD4_finalize(void);
 #endif
+
 
 #ifdef USE_PNETCDF
 extern int NCP_initialize(void);
@@ -46,7 +59,7 @@ extern int NC_HDF4_initialize(void);
 extern int NC_HDF4_finalize(void);
 #endif
 
-#ifdef ENABLE_S3_SDK
+#ifdef NETCDF_ENABLE_S3
 EXTERNL int NC_s3sdkinitialize(void);
 EXTERNL int NC_s3sdkfinalize(void);
 #endif
@@ -59,7 +72,7 @@ EXTERNL int NC_s3sdkfinalize(void);
 int NC_initialized = 0;
 int NC_finalized = 1;
 
-#ifdef ENABLE_ATEXIT_FINALIZE
+#ifdef NETCDF_ENABLE_ATEXIT_FINALIZE
 /* Provide the void function to give to atexit() */
 static void
 finalize_atexit(void)
@@ -69,13 +82,21 @@ finalize_atexit(void)
 #endif
 
 /**
-This procedure invokes all defined
-initializers, and there is an initializer
-for every known dispatch table.
-So if you modify the format of NC_Dispatch,
-then you need to fix it everywhere.
-It also initializes appropriate external libraries.
-*/
+ * Initialize the netCDF library.
+ *
+ * This function sets up all internal dispatch tables and initializes
+ * any external libraries required by the enabled protocols (e.g.,
+ * HDF5, DAP2, DAP4, PnetCDF, NCZarr). It is called automatically on
+ * first use of the library, so most users do not need to call it
+ * directly.
+ *
+ * It is safe to call this function more than once; subsequent calls
+ * are no-ops.
+ *
+ * @return ::NC_NOERR No error.
+ * @return ::NC_EXXX An error occurred during initialization.
+ * @see nc_finalize
+ */
 
 int
 nc_initialize()
@@ -91,10 +112,10 @@ nc_initialize()
 
     /* Initialize each active protocol */
     if((stat = NC3_initialize())) goto done;
-#ifdef ENABLE_DAP
+#ifdef NETCDF_ENABLE_DAP
     if((stat = NCD2_initialize())) goto done;
 #endif
-#ifdef ENABLE_DAP4
+#ifdef NETCDF_ENABLE_DAP4
     if((stat = NCD4_initialize())) goto done;
 #endif
 #ifdef USE_PNETCDF
@@ -109,14 +130,14 @@ nc_initialize()
 #ifdef USE_HDF4
     if((stat = NC_HDF4_initialize())) goto done;
 #endif
-#ifdef ENABLE_S3_SDK
+#ifdef NETCDF_ENABLE_S3
     if((stat = NC_s3sdkinitialize())) goto done;
 #endif
-#ifdef ENABLE_NCZARR
+#ifdef NETCDF_ENABLE_NCZARR
     if((stat = NCZ_initialize())) goto done;
 #endif
 
-#ifdef ENABLE_ATEXIT_FINALIZE
+#ifdef NETCDF_ENABLE_ATEXIT_FINALIZE
     /* Use atexit() to invoke nc_finalize */
     if(atexit(finalize_atexit))
 	fprintf(stderr,"atexit failed\n");
@@ -127,13 +148,23 @@ done:
 }
 
 /**
-This procedure invokes all defined
-finalizers, and there should be one
-for every known dispatch table.
-So if you modify the format of NC_Dispatch,
-then you need to fix it everywhere.
-It also finalizes appropriate external libraries.
-*/
+ * Finalize the netCDF library.
+ *
+ * This function releases all internal resources and finalizes any
+ * external libraries initialized by nc_initialize(). After calling
+ * this function, the library may be re-initialized by calling
+ * nc_initialize() again.
+ *
+ * If ::NETCDF_ENABLE_ATEXIT_FINALIZE is set, this function is
+ * registered with atexit() and called automatically at program exit.
+ *
+ * It is safe to call this function more than once; subsequent calls
+ * are no-ops.
+ *
+ * @return ::NC_NOERR No error.
+ * @return ::NC_EXXX An error occurred during finalization.
+ * @see nc_initialize
+ */
 
 int
 nc_finalize(void)
@@ -147,10 +178,10 @@ nc_finalize(void)
 
     /* Finalize each active protocol */
 
-#ifdef ENABLE_DAP2
+#ifdef NETCDF_ENABLE_DAP2
     if((stat = NCD2_finalize())) failed = stat;
 #endif
-#ifdef ENABLE_DAP4
+#ifdef NETCDF_ENABLE_DAP4
     if((stat = NCD4_finalize())) failed = stat;
 #endif
 
@@ -170,11 +201,11 @@ nc_finalize(void)
     if((stat = NC_HDF5_finalize())) failed = stat;
 #endif
 
-#ifdef ENABLE_NCZARR
+#ifdef NETCDF_ENABLE_NCZARR
     if((stat = NCZ_finalize())) failed = stat;
 #endif
 
-#ifdef ENABLE_S3_SDK
+#ifdef NETCDF_ENABLE_S3
     if((stat = NC_s3sdkfinalize())) failed = stat;
 #endif
 

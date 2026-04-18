@@ -10,9 +10,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/types.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#include <unistd.h>
 
 #include "nc3internal.h"
 #include "netcdf_mem.h"
@@ -92,7 +94,7 @@ err:
 int
 nc3_cktype(int mode, nc_type type)
 {
-#ifdef ENABLE_CDF5
+#ifdef NETCDF_ENABLE_CDF5
     if (mode & NC_CDF5) { /* CDF-5 format */
         if (type >= NC_BYTE && type < NC_STRING) return NC_NOERR;
     } else
@@ -153,7 +155,7 @@ NC_begins(NC3_INFO* ncp,
 	size_t v_minfree, size_t r_align)
 {
 	size_t ii, j;
-	int sizeof_off_t;
+	size_t sizeof_off_t;
 	off_t index = 0;
 	off_t old_ncp_begin_var;
 	NC_var **vpp;
@@ -186,7 +188,7 @@ NC_begins(NC3_INFO* ncp,
 	{
 	  index = (off_t) ncp->xsz;
 	  ncp->begin_var = D_RNDUP(index, v_align);
-	  if(ncp->begin_var < index + h_minfree)
+	  if(ncp->begin_var < index + (off_t)h_minfree)
 	  {
 	    ncp->begin_var = D_RNDUP(index + (off_t)h_minfree, v_align);
 	  }
@@ -253,11 +255,11 @@ fprintf(stderr, "    VAR %d %s: %ld\n", ii, (*vpp)->name->cp, (long)index);
 	/* only (re)calculate begin_rec if there is not sufficient
 	   space at end of non-record variables or if start of record
 	   variables is not aligned as requested by r_align */
-	if (ncp->begin_rec < index + v_minfree ||
+	if (ncp->begin_rec < index + (off_t)v_minfree ||
 	    ncp->begin_rec != D_RNDUP(ncp->begin_rec, r_align) )
 	{
 	  ncp->begin_rec = D_RNDUP(index, r_align);
-	  if(ncp->begin_rec < index + v_minfree)
+	  if(ncp->begin_rec < index + (off_t)v_minfree)
 	  {
 	    ncp->begin_rec = D_RNDUP(index + (off_t)v_minfree, r_align);
 	  }
@@ -524,8 +526,8 @@ fill_added_recs(NC3_INFO *gnu, NC3_INFO *old)
 {
 	NC_var ** const gnu_varpp = (NC_var **)gnu->vars.value;
 
-	const int old_nrecs = (int) NC_get_numrecs(old);
-	int recno = 0;
+	const size_t old_nrecs = NC_get_numrecs(old);
+	size_t recno = 0;
 	NC_var **vpp = gnu_varpp;
 	NC_var *const *const end = &vpp[gnu->vars.nelems];
 	int numrecvars = 0;
@@ -554,7 +556,7 @@ fill_added_recs(NC3_INFO *gnu, NC3_INFO *old)
 			    }
 			/* else */
 			{
-			    size_t varsize = numrecvars == 1 ? gnu->recsize :  gnu_varp->len;
+			    long long varsize = numrecvars == 1 ? gnu->recsize :  gnu_varp->len;
 			    const int status = fill_NC_var(gnu, gnu_varp, varsize, recno);
 			    if(status != NC_NOERR)
 				return status;
@@ -629,8 +631,8 @@ move_recs_r(NC3_INFO *gnu, NC3_INFO *old)
 
 		/* else, a pre-existing variable */
 		old_varp = *(old_varpp + varid);
-		gnu_off = gnu_varp->begin + (off_t)(gnu->recsize * recno);
-		old_off = old_varp->begin + (off_t)(old->recsize * recno);
+		gnu_off = gnu_varp->begin + (off_t)(gnu->recsize * (size_t)recno);
+		old_off = old_varp->begin + (off_t)(old->recsize * (size_t)recno);
 
 		if(gnu_off == old_off)
 			continue; 	/* nothing to do */
@@ -950,22 +952,25 @@ int
 NC_calcsize(const NC3_INFO *ncp, off_t *calcsizep)
 {
 	NC_var **vpp = (NC_var **)ncp->vars.value;
-	NC_var *const *const end = &vpp[ncp->vars.nelems];
 	NC_var *last_fix = NULL;	/* last "non-record" var */
 	int numrecvars = 0;	/* number of record variables */
 
 	if(ncp->vars.nelems == 0) { /* no non-record variables and
 				       no record variables */
-	    *calcsizep = ncp->xsz; /* size of header */
+	    *calcsizep = (off_t)ncp->xsz; /* size of header */
 	    return NC_NOERR;
 	}
 
-	for( /*NADA*/; vpp < end; vpp++) {
-	    if(IS_RECVAR(*vpp)) {
-		numrecvars++;
-	    } else {
-		last_fix = *vpp;
-	    }
+	if (vpp)
+	{
+		NC_var *const *const end = &vpp[ncp->vars.nelems];
+		for( /*NADA*/; vpp < end; vpp++) {
+		    if(IS_RECVAR(*vpp)) {
+			numrecvars++;
+		    } else {
+			last_fix = *vpp;
+		    }
+		}
 	}
 
 	if(numrecvars == 0) {
@@ -973,16 +978,15 @@ NC_calcsize(const NC3_INFO *ncp, off_t *calcsizep)
 	    assert(last_fix != NULL);
 	    varsize = last_fix->len;
 	    if(last_fix->len == X_UINT_MAX) { /* huge last fixed var */
-		int i;
 		varsize = 1;
-  	        for(i = 0; i < last_fix->ndims; i++ ) {
-                varsize *= (last_fix->shape ? last_fix->shape[i] : 1);
-		    }
+		for(size_t i = 0; i < last_fix->ndims; i++ ) {
+		    varsize *= (last_fix->shape ? last_fix->shape[i] : 1);
+		}
 	    }
 	    *calcsizep = last_fix->begin + varsize;
 	    /*last_var = last_fix;*/
 	} else {       /* we have at least one record variable */
-	    *calcsizep = ncp->begin_rec + ncp->numrecs * ncp->recsize;
+	    *calcsizep = ncp->begin_rec + (off_t)(ncp->numrecs * ncp->recsize);
 	}
 
 	return NC_NOERR;
@@ -1018,7 +1022,7 @@ NC3_create(const char *path, int ioflags, size_t initialsz, int basepe,
 {
 	int status = NC_NOERR;
 	void *xp = NULL;
-	int sizeof_off_t = 0;
+	size_t sizeof_off_t = 0;
         NC *nc;
 	NC3_INFO* nc3 = NULL;
 
@@ -1131,7 +1135,7 @@ nc_set_default_format(int format, int *old_formatp)
       return NC_EINVAL;
 #else
     if (format != NC_FORMAT_CLASSIC && format != NC_FORMAT_64BIT_OFFSET
-#ifdef ENABLE_CDF5
+#ifdef NETCDF_ENABLE_CDF5
         && format != NC_FORMAT_CDF5
 #endif
         )
@@ -1560,7 +1564,7 @@ NC3_inq_format(int ncid, int *formatp)
       return NC_NOERR;
 
    /* only need to check for netCDF-3 variants, since this is never called for netCDF-4 files */
-#ifdef ENABLE_CDF5
+#ifdef NETCDF_ENABLE_CDF5
    if (fIsSet(nc3->flags, NC_64BIT_DATA))
       *formatp = NC_FORMAT_CDF5;
    else
@@ -1641,11 +1645,6 @@ NC3_inq_type(int ncid, nc_type typeid, char *name, size_t *size)
 
    return NC_NOERR;
 }
-
-
-#ifndef unlink
-int unlink(const char *pathname);
-#endif
 
 /**
  * This is an obsolete form of nc_delete(), supported for backwards
@@ -1728,7 +1727,7 @@ NC3_inq_var_fill(const NC_var *varp, void *fill_value)
     /*
      * find fill value
      */
-    attrpp = NC_findattr(&varp->attrs, _FillValue);
+    attrpp = NC_findattr(&varp->attrs, NC_FillValue);
     if ( attrpp != NULL ) {
         const void *xp;
         /* User defined fill value */

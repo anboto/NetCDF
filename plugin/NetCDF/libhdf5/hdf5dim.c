@@ -2,9 +2,10 @@
  * Research. See the COPYRIGHT file for copying and redistribution
  * conditions. */
 /**
- * @file @internal This file is part of netcdf-4, a netCDF-like
- * interface for HDF5, or a HDF5 backend for netCDF, depending on your
- * point of view.
+ * @file
+ * @internal This file is part of netcdf-4, a netCDF-like interface
+ * for HDF5, or a HDF5 backend for netCDF, depending on your point of
+ * view.
  *
  * This file includes the HDF5 code to deal with dimensions.
  *
@@ -46,7 +47,6 @@ HDF5_def_dim(int ncid, const char *name, size_t len, int *idp)
     NC_DIM_INFO_T *dim;
     char norm_name[NC_MAX_NAME + 1];
     int retval = NC_NOERR;
-    int i;
 
     LOG((2, "%s: ncid 0x%x name %s len %d", __func__, ncid, name,
          (int)len));
@@ -63,16 +63,16 @@ HDF5_def_dim(int ncid, const char *name, size_t len, int *idp)
     /* Check some stuff if strict nc3 rules are in effect. */
     if (h5->cmode & NC_CLASSIC_MODEL)
     {
-        /* Only one limited dimenson for strict nc3. */
+        /* Only one limited dimension for strict nc3. */
         if (len == NC_UNLIMITED) {
-            for(i=0;i<ncindexsize(grp->dim);i++) {
+            for(size_t i=0;i<ncindexsize(grp->dim);i++) {
                 dim = (NC_DIM_INFO_T*)ncindexith(grp->dim,i);
                 if(dim == NULL) continue;
                 if (dim->unlimited)
                     return NC_EUNLIMIT;
             }
         }
-        /* Must be in define mode for stict nc3. */
+        /* Must be in define mode for strict nc3. */
         if (!(h5->flags & NC_INDEF))
             return NC_ENOTINDEFINE;
     }
@@ -118,7 +118,7 @@ HDF5_def_dim(int ncid, const char *name, size_t len, int *idp)
 /**
  * @internal Find out name and len of a dim. For an unlimited
  * dimension, the length is the largest length so far written. If the
- * name of lenp pointers are NULL, they will be ignored.
+ * name or lenp pointers are NULL, they will be ignored.
  *
  * @param ncid File and group ID.
  * @param dimid Dimension ID.

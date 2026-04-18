@@ -15,6 +15,7 @@
 #include "nc4internal.h"
 #include "nc4dispatch.h"
 #include "nc.h"
+#include "ncudfplugins.h"
 
 /* If user-defined formats are in use, we need to declare their
  * dispatch tables. */
@@ -25,14 +26,9 @@ extern NC_Dispatch UDF0_DISPATCH;
 extern NC_Dispatch UDF1_DISPATCH;
 #endif /* USE_UDF1 */
 
-#ifdef USE_NETCDF4
-/* Pointers to dispatch tables for user-defined formats. */
-extern NC_Dispatch *UDF0_dispatch_table;
-extern NC_Dispatch *UDF1_dispatch_table;
-#endif /* USE_NETCDF4 */
-
-
-
+extern int nc_plugin_path_initialize(void);
+extern int nc_plugin_path_finalize(void);
+    
 /**
  * @internal Initialize netCDF-4. If user-defined format(s) have been
  * specified in configure, load their dispatch table(s).
@@ -63,10 +59,23 @@ NC4_initialize(void)
     if(getenv(NCLOGLEVELENV) != NULL) {
         char* slevel = getenv(NCLOGLEVELENV);
         long level = atol(slevel);
-        if(level >= 0)
+#ifdef USE_NETCDF4
+        if(level >= 0) {
             nc_set_log_level((int)level);
+        }
     }
 #endif
+#endif
+
+#if defined(USE_HDF5) || defined(NETCDF_ENABLE_NCZARR)
+    nc_plugin_path_initialize();
+#endif
+
+    /* Load UDF plugins from RC file configuration */
+    if ((ret = NC_udf_load_plugins()))
+        return ret;
+
+    NC_initialize_reserved();
     return ret;
 }
 
@@ -79,5 +88,8 @@ NC4_initialize(void)
 int
 NC4_finalize(void)
 {
+#if defined(USE_HDF5) || defined(NETCDF_ENABLE_NCZARR)
+    nc_plugin_path_finalize();
+#endif
     return NC_NOERR;
 }

@@ -176,7 +176,7 @@ s3io_open(const char* path,
         {status = NC_EURL; goto done;}
 
     /* Convert to canonical path-style */
-    if((status = NC_s3urlprocess(url,&s3io->s3))) goto done;
+    if((status = NC_s3urlprocess(url,&s3io->s3,NULL))) goto done;
     /* Verify root path */
     if(s3io->s3.rootkey == NULL)
         {status = NC_EURL; goto done;}
@@ -184,7 +184,7 @@ s3io_open(const char* path,
     /* Get the size */
     switch (status = NC_s3sdkinfo(s3io->s3client,s3io->s3.bucket,s3io->s3.rootkey,(long long unsigned*)&s3io->size,&s3io->errmsg)) {
     case NC_NOERR: break;
-    case NC_EEMPTY:
+    case NC_ENOOBJECT:
         s3io->size = 0;
 	goto done;
     default:
@@ -252,8 +252,15 @@ s3io_close(ncio* nciop, int deleteit)
     s3io = (NCS3IO*)nciop->pvt;
     assert(s3io != NULL);
 
+
     if(s3io->s3client && s3io->s3.bucket && s3io->s3.rootkey) {
-        NC_s3sdkclose(s3io->s3client, &s3io->s3, deleteit, &s3io->errmsg);
+
+#ifdef NETCDF_ENABLE_S3_INTERNAL
+	if(deleteit)
+	    NC_s3sdktruncate(s3io->s3client, s3io->s3.bucket, s3io->s3.rootkey, &s3io->errmsg);
+        NC_s3sdkclose(s3io->s3client, &s3io->errmsg);
+#endif
+
     }
     s3io->s3client = NULL;
     NC_s3clear(&s3io->s3);

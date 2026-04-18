@@ -7,18 +7,27 @@ uses
 
 options(CLANG & PEDANTIC) "-Wall -Wextra -Wunused-parameter -Wlogical-op-parentheses -Wdeprecated-copy-with-user-provided-copy -Woverloaded-virtual -Wmissing-braces -Wshadow -Wimplicit-fallthrough -Wsign-conversion -Wformat=2";
 
+options(CLANG) "-D HAVE_CONFIG_H";
+
 include
 	./include,
 	../../../Hdf5\plugin\Hdf5\src;
 
 file
+	libdispatch\dmissing.c,
 	libdispatch\datt.c,
 	libdispatch\dattget.c,
+	libdispatch\dplugins.c,
 	libhdf5\hdf5attr.c,
+	libsrc\nc3internal.c,
+	libsrc\putget.c,
 	libhdf5\hdf5create.c,
 	libhdf5\hdf5debug.c,
 	libhdf5\hdf5debug.h,
+	libdispatch\dudfplugins.c,
+	libhdf5\hdf5plugins.c,
 	libhdf5\hdf5dim.c,
+	libdispatch\dglobal.c,
 	libhdf5\hdf5dispatch.c,
 	libhdf5\hdf5err.h,
 	libhdf5\hdf5file.c,
@@ -100,6 +109,7 @@ file
 	libsrc\dim.c,
 	libsrc\lookup3.c,
 	libsrc\memio.c,
+	libdispatch\dinstance_intern.c,
 	libsrc\nc3dispatch.c,
 	libsrc\nc3internal.c,
 	libsrc\ncio.c,
@@ -108,7 +118,6 @@ file
 	libsrc\ncx.h,
 	libsrc\posixio.c,
 	libsrc\pstdint.h,
-	libsrc\putget.c,
 	libsrc\v1hpg.c,
 	libsrc\var.c,
 	libsrc\XGetopt.c,

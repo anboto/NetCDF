@@ -103,10 +103,14 @@ are set when opening a binary file on Windows. */
 /* #undef C_ALLOCA */
 
 /* num chunks in default per-var chunk cache. */
-#define DEFAULT_CHUNKS_IN_CACHE 10
+#define DEFAULT_CHUNKS_IN_CACHE 1000
 
 /* default chunk size in bytes */
-#define DEFAULT_CHUNK_SIZE 16777216
+#define DEFAULT_CHUNK_SIZE 4194304
+
+#define DEFAULT_CHUNK_CACHE_SIZE 67108864U
+
+#define DEFAULT_CHUNK_CACHE_PREEMPTION 0.75
 
 /* set this only when building a DLL under MinGW */
 /* #undef DLL_EXPORT */
@@ -688,6 +692,11 @@ with zip */
 /* #undef uintptr_t */
 
 /* #undef WORDS_BIGENDIAN */
+
+#define HAVE_MODE_T
+
+#define NETCDF_ENABLE_LEGACY_MACROS
+#define NETCDF_PLUGIN_SEARCH_PATH ""
 
 #include "ncconfigure.h"
 

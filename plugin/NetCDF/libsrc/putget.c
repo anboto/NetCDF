@@ -7,9 +7,9 @@
  */
 /* $Id: putget.m4 2783 2014-10-26 05:19:35Z wkliao $ */
 
-#if HAVE_CONFIG_H
+//#if HAVE_CONFIG_H
 #include <config.h>
-#endif
+//#endif
 
 #include <string.h>
 #include <stdlib.h>

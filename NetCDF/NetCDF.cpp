@@ -15,7 +15,7 @@ void NetCDFFile::Open(const char *file) {
 	if (!FileExists(file))
 		throw Exc(F("File '%s' does not exist", file));
 
-	if ((retval = nc_open(file, NC_NOWRITE, &ncid)))
+	if ((retval = nc_open(ToSystemCharset(file), NC_NOWRITE, &ncid)))
        throw Exc(nc_strerror(retval)); 
     fileid = ncid;
  
@@ -35,7 +35,7 @@ bool NetCDFFile::IsOpened() {
 void NetCDFFile::Create(const char *file, int format) {
 	Close();
 	
-	if ((retval = nc_create(file, NC_CLOBBER | format, &ncid)))
+	if ((retval = nc_create(ToSystemCharset(file), NC_CLOBBER | format, &ncid)))
        throw Exc(nc_strerror(retval)); 
     fileid = ncid;
     

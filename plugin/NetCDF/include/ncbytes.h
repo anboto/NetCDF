@@ -5,10 +5,10 @@
 #define NCBYTES_H 1
 
 typedef struct NCbytes {
-  int nonextendible; /* 1 => fail if an attempt is made to extend this buffer*/
+  char* content;
   unsigned long alloc;
   unsigned long length;
-  char* content;
+  int extendible; /* 0 => fail if an attempt is made to extend this buffer*/
 } NCbytes;
 
 #include "ncexternl.h"
@@ -47,8 +47,8 @@ EXTERNL int ncbytesremove(NCbytes*,unsigned long);
 /* Concatenate a null-terminated string to the end of the buffer */
 EXTERNL int ncbytescat(NCbytes*,const char*);
 
-/* Set the contents of the buffer; mark the buffer as non-extendible */
-EXTERNL int ncbytessetcontents(NCbytes*, void*, unsigned long);
+/* Set the contents of the buffer; mark the buffer extendible = false */
+EXTERNL int ncbytessetcontents(NCbytes*, void*, unsigned long, unsigned long length);
 
 /* Following are always "in-lined"*/
 #define ncbyteslength(bb) ((bb)!=NULL?(bb)->length:0)
@@ -57,6 +57,7 @@ EXTERNL int ncbytessetcontents(NCbytes*, void*, unsigned long);
 #define ncbytesextend(bb,len) ncbytessetalloc((bb),(len)+(bb->alloc))
 #define ncbytesclear(bb) ((bb)!=NULL?(bb)->length=0:0)
 #define ncbytesavail(bb,n) ((bb)!=NULL?((bb)->alloc - (bb)->length) >= (n):0)
+#define ncbytesextendible(bb) ((bb)!=NULL?((bb)->nonextendible?0:1):0)
 
 #if defined(_CPLUSPLUS_) || defined(__CPLUSPLUS__) || defined(__CPLUSPLUS)
 }
