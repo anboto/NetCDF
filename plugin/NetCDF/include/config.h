@@ -51,10 +51,11 @@ are set when opening a binary file on Windows. */
    #define read _read
    #define lseek _lseeki64
 
+/*
    #ifndef __clang__
    #define fstat _fstat64
    #endif
-
+*/
    #define off_t __int64
    #define _off_t __int64
 

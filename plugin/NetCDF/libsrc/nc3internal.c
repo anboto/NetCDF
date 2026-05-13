@@ -1,5 +1,5 @@
 /*
- *	Copyright 2018, Unuiversity Corporation for Atmospheric Research
+ *	Copyright 2018, University Corporation for Atmospheric Research
  *      See netcdf/COPYRIGHT file for copying and redistribution conditions.
  */
 
@@ -14,7 +14,6 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <unistd.h>
 
 #include "nc3internal.h"
 #include "netcdf_mem.h"
