@@ -42,6 +42,7 @@ file
 	libhdf5\nc4info.c,
 	libhdf5\nc4mem.c,
 	libhdf5\nc4memcb.c,
+	libhdf5\nc4info.c,
 	libdispatch\dattinq.c,
 	libdispatch\dattput.c,
 	libdispatch\dauth.c,
