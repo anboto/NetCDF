@@ -323,7 +323,7 @@ are set when opening a binary file on Windows. */
 #define HAVE_MEMMOVE 1
 
 /* Define to 1 if you have the `mkstemp' function. */
-#ifdef __linux__
+#if defined(__linux__) || defined (__APPLE__)
 #define HAVE_MKSTEMP
 #endif
 
@@ -346,7 +346,7 @@ are set when opening a binary file on Windows. */
 #define HAVE_SNPRINTF 1
 
 /* Define to 1 if the system has the type `ssize_t'. */
-#ifdef __linux__
+#if defined(__linux__) || defined (__APPLE__)
 #define HAVE_SSIZE_T
 #endif
 
