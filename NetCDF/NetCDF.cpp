@@ -289,13 +289,13 @@ String NetCDFFile::GetString(const char *name) {
 	return String();
 }
 
-void NetCDFFile::GetVariableData(const char *name, nc_type &type, Vector<int> &dims) {
-	GetVariableData(GetId(name), type, dims);
+void NetCDFFile::GetVariableData(const char *name, nc_type &type, Vector<int> &dims, bool stringIsChar) {
+	GetVariableData(GetId(name), type, dims, stringIsChar);
 }
 
-void NetCDFFile::GetVariableData(int id, nc_type &type, Vector<int> &dims) {
+void NetCDFFile::GetVariableData(int id, nc_type &type, Vector<int> &dims, bool stringIsChar) {
 	GetVariableData0(id, type, dims);
-	if (type == NC_CHAR) {	// The strings are set as vector of chars
+	if (stringIsChar && type == NC_CHAR) {	// The strings are set as vector of chars
     	if (dims.size() == 1)
             dims.Clear();
         else if (dims.size() == 2) 
@@ -376,8 +376,8 @@ void NetCDFFile::GetDouble(const char *name, Eigen::MatrixXd &data) {
 	Vector<int> dims;
 	GetVariableData(lastvarid, type, dims);	
 
-	if (dims.size() != 2)
-		throw Exc(F("Wrong number of dimensions in GetDouble(%s). Found %d", name, dims.size()));
+	//if (dims.size() != 2)
+	//	throw Exc(F("Wrong number of dimensions in GetDouble(%s). Found %d", name, dims.size()));
 	
 	int sz = 1;
 	for (int n : dims)
@@ -387,7 +387,11 @@ void NetCDFFile::GetDouble(const char *name, Eigen::MatrixXd &data) {
 		Buffer<double> d((size_t)sz);
 		if ((retval = nc_get_var_double(ncid, lastvarid, d.Get())))
 	    	throw Exc(nc_strerror(retval));
-		CopyRowMajor(d.Get(), dims[0], dims[1], data);
+		if (dims.size() == 1) {			// If vector, it is saved as a matrix with one row
+			data.resize(1, dims[0]);
+			data.row(0)	= Eigen::Map<Eigen::VectorXd>(d.Get(), dims[0]);
+		} else
+			CopyRowMajor(d.Get(), dims[0], dims[1], data);
 	} else if (type == NC_INT) {
 		Buffer<int> d((size_t)sz);
 		if ((retval = nc_get_var_int(ncid, lastvarid, d.Get())))
