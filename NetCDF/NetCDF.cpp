@@ -295,12 +295,12 @@ void NetCDFFile::GetVariableData(const char *name, nc_type &type, Vector<int> &d
 
 void NetCDFFile::GetVariableData(int id, nc_type &type, Vector<int> &dims, bool stringIsChar) {
 	GetVariableData0(id, type, dims);
-	if (stringIsChar && type == NC_CHAR) {	// The strings are set as vector of chars
+	/*if (stringIsChar && type == NC_CHAR) {	// The strings are set as vector of chars
     	if (dims.size() == 1)
             dims.Clear();
         else if (dims.size() == 2) 
             dims.SetCount(1);
-	}
+	}*/
 }
 
 void NetCDFFile::GetVariableData0(int id, nc_type &type, Vector<int> &dims) {
@@ -461,19 +461,30 @@ void NetCDFFile::GetString(const char *name, Vector<String> &data) {
 	GetVariableData0(lastvarid, type, dims);
 	
 	if (type == NC_CHAR) {
-		if (dims.size() != 2)
-			throw Exc(F("Wrong number of dimensions in GetString(%s) (char). Found %d", name, dims.size()));
-		
-		Buffer<char> str((size_t)(dims[0]*dims[1]));
-		if ((retval = nc_get_var_text(ncid, lastvarid, ~str)))
-	    	throw Exc(nc_strerror(retval));	
-		data.SetCount(dims[0]);
-		StringBuffer bstr(dims[1]);
-		for (int i = 0; i < dims[0]; ++i) {
-			memcpy(bstr.begin(), str+i*dims[1], (size_t)dims[1]);
+		if (dims.size() == 2) {
+			Buffer<char> str((size_t)(dims[0]*dims[1]));
+			if ((retval = nc_get_var_text(ncid, lastvarid, ~str)))
+		    	throw Exc(nc_strerror(retval));	
+			data.SetCount(dims[0]);
+			StringBuffer bstr(dims[1]);
+			for (int i = 0; i < dims[0]; ++i) {
+				memcpy(bstr.begin(), str+i*dims[1], (size_t)dims[1]);
+				bstr.Strlen();
+				data[i] = bstr;
+			}
+		} else if (dims.size() == 1) {
+			int len = dims[0];
+			
+			Buffer<char> str(len);
+			if ((retval = nc_get_var_text(ncid, lastvarid, ~str)))
+		    	throw Exc(nc_strerror(retval));	
+			data.SetCount(1);
+			StringBuffer bstr(len);
+			memcpy(bstr.begin(), str, len);
 			bstr.Strlen();
-			data[i] = bstr;
-		}
+			data[0] = bstr;
+		} else
+			throw Exc(F("Wrong number of dimensions in GetString(%s) (char). Found %d", name, dims.size()));
 	} else if (type == NC_STRING) {
 		if (dims.size() != 1)
 			throw Exc(F("Wrong number of dimensions in GetString(%s) (string). Found %d", name, dims.size()));
