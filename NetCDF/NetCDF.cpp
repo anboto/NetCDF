@@ -266,7 +266,7 @@ String NetCDFFile::GetString(const char *name) {
 	lastvarid = GetId(name);
 	nc_type type;
 	Vector<int> dims;
-	GetVariableData0(lastvarid, type, dims);
+	GetVariableData(lastvarid, type, dims);
 	
 	if (type == NC_CHAR) {
 		if (dims.size() != 1)
@@ -289,21 +289,11 @@ String NetCDFFile::GetString(const char *name) {
 	return String();
 }
 
-void NetCDFFile::GetVariableData(const char *name, nc_type &type, Vector<int> &dims, bool stringIsChar) {
-	GetVariableData(GetId(name), type, dims, stringIsChar);
+void NetCDFFile::GetVariableData(const char *name, nc_type &type, Vector<int> &dims) {
+	GetVariableData(GetId(name), type, dims);
 }
 
-void NetCDFFile::GetVariableData(int id, nc_type &type, Vector<int> &dims, bool stringIsChar) {
-	GetVariableData0(id, type, dims);
-	/*if (stringIsChar && type == NC_CHAR) {	// The strings are set as vector of chars
-    	if (dims.size() == 1)
-            dims.Clear();
-        else if (dims.size() == 2) 
-            dims.SetCount(1);
-	}*/
-}
-
-void NetCDFFile::GetVariableData0(int id, nc_type &type, Vector<int> &dims) {
+void NetCDFFile::GetVariableData(int id, nc_type &type, Vector<int> &dims) {
 	lastvarid = id;
 	int ndim, natts;
 
@@ -458,7 +448,7 @@ void NetCDFFile::GetString(const char *name, Vector<String> &data) {
 	lastvarid = GetId(name);
 	nc_type type;
 	Vector<int> dims;
-	GetVariableData0(lastvarid, type, dims);
+	GetVariableData(lastvarid, type, dims);
 	
 	if (type == NC_CHAR) {
 		if (dims.size() == 2) {

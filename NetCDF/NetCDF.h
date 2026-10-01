@@ -38,7 +38,7 @@ public:
 	bool ExistVar(const char *name);
 	int GetId(const char *name);
 	
-	void GetVariableData(const char *name, nc_type &type, Vector<int> &dims, bool stringIsChar = true);
+	void GetVariableData(const char *name, nc_type &type, Vector<int> &dims);
 	
 	String GetVariableString(const char *name);
 	void GetInt(const char *name, Eigen::MatrixXi &data);
@@ -154,8 +154,7 @@ private:
 	bool allowGroups = false;
 	
 	String GetAttributeString0(const char *name, int len);
-	void GetVariableData(int id, nc_type &type, Vector<int> &dims, bool stringIsChar = true);
-	void GetVariableData0(int id, nc_type &type, Vector<int> &dims);
+	void GetVariableData(int id, nc_type &type, Vector<int> &dims);
 	String GetName(int id);
 	void ChangeGroup(int group_id);
 	String ToString0();
