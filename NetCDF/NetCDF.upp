@@ -3,7 +3,6 @@ description "Network Common Data Form (NetCDF) library wrapper\377B44,169,203";
 uses
 	Core,
 	plugin/Hdf5,
-	plugin/z,
 	Eigen,
 	plugin/NetCDF,
 	Functions4U;
